@@ -1,0 +1,44 @@
+# ==========================
+# Node / Server
+# ==========================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment variables
+.env
+
+# Runtime files
+*.log
+.DS_Store
+
+# ==========================
+# Keys (keep folder, remove contents)
+# ==========================
+# ignore all files inside /keys/
+keys/*
+
+# but do NOT ignore the folder itself
+!keys/
+# allow example placeholder if needed
+!keys/.gitkeep
+
+# ==========================
+# App-specific sensitive files
+# ==========================
+spotify_token.json
+token.json
+device_config.json
+firmware.json
+
+# Backup files
+*.bak
+*.tmp
+
+# ==========================
+# Build / Cache
+# ==========================
+dist/
+build/
+.cache/

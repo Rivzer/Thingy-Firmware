@@ -1,0 +1,298 @@
+.settings,
+.settings * {
+  box-sizing: border-box;
+}
+
+.settings {
+  background: #202125;
+  height: 480px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* RESET BUTTON */
+.rectangle-12 {
+  background: #404957;
+  border-radius: 10px;
+  width: 96px;
+  height: 36px;
+  position: absolute;
+  left: 258px;
+  top: 415px;
+}
+
+.reset {
+  color: #d26060;
+  text-align: center;
+  font-family: "Poppins-Bold", sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  position: absolute;
+  left: 258px;
+  top: 415px;
+  width: 96px;
+  height: 36px;
+  line-height: 36px;
+}
+
+/* RECONFIGURE WIFI */
+.rectangle-24 {
+  background: #404957;
+  border-radius: 10px;
+  width: 177px;
+  height: 36px;
+  position: absolute;
+  left: 364px;
+  top: 415px;
+}
+
+.reconfigure-wi-fi {
+  color: #d26060;
+  text-align: center;
+  font-family: "Poppins-Bold", sanssans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  position: absolute;
+  left: 364px;
+  top: 415px;
+  width: 177px;
+  height: 36px;
+  line-height: 36px;
+}
+
+/* APP SETTINGS */
+.rectangle-242 {
+  background: #404957;
+  border-radius: 10px;
+  width: 371px;
+  height: 42px;
+  position: absolute;
+  left: 216px;
+  top: 160px;
+}
+
+.app-settings {
+  color: #ffffff;
+  text-align: left;
+  font-family: "Poppins-Bold", sans-serif;
+  font-size: 17px;
+  font-weight: 700;
+  position: absolute;
+  left: 231px;
+  top: 160px;
+  width: 371px;
+  height: 42px;
+  line-height: 42px;
+}
+
+/* DEVICE INFORMATION */
+.rectangle-243 {
+  background: #404957;
+  border-radius: 10px;
+  width: 371px;
+  height: 42px;
+  position: absolute;
+  left: 216px;
+  top: 278px;
+}
+
+.device-information {
+  color: #ffffff;
+  text-align: left;
+  font-family: "Poppins-Bold", sans-serif;
+  font-size: 17px;
+  font-weight: 700;
+  position: absolute;
+  left: 231px;
+  top: 278px;
+  width: 371px;
+  height: 42px;
+  line-height: 42px;
+}
+
+/* TIME ZONE */
+.rectangle-244 {
+  background: #404957;
+  border-radius: 10px;
+  width: 371px;
+  height: 42px;
+  position: absolute;
+  left: 216px;
+  top: 337px;
+}
+
+.time-zone {
+  color: #ffffff;
+  text-align: left;
+  font-family: "Poppins-Bold", sans-serif;
+  font-size: 17px;
+  font-weight: 700;
+  position: absolute;
+  left: 231px;
+  top: 337px;
+  width: 371px;
+  height: 42px;
+  line-height: 42px;
+}
+
+/* TIMEZONE SELECTOR */
+.rectangle-23 {
+  background: #5a6474;
+  border-radius: 10px;
+  width: 125.57px;
+  height: 26px;
+  position: absolute;
+  left: 457px;
+  top: 345px;
+}
+
+.brussel {
+  color: #ffffff;
+  text-align: left;
+  font-family: "Poppins-Bold", sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  position: absolute;
+  left: 466px;
+  top: 345px;
+  width: 125.57px;
+  height: 26px;
+  line-height: 26px;
+}
+
+.chat-gpt-image-25-nov-2025-20-28-21-4 {
+  width: 11px;
+  height: 11px;
+  position: absolute;
+  left: 560px;
+  top: 353px;
+  transform-origin: 0 0;
+  transform: rotate(-90deg) scale(1, -1);
+  object-fit: cover;
+}
+
+/* LANGUAGE SELECTOR */
+.rectangle-10 {
+  background: #404957;
+  border-radius: 10px;
+  width: 371px;
+  height: 42px;
+  position: absolute;
+  left: 216px;
+  top: 219px;
+}
+
+.language {
+  color: #ffffff;
+  text-align: left;
+  font-family: "Poppins-Bold", sans-serif;
+  font-size: 17px;
+  font-weight: 700;
+  position: absolute;
+  left: 231px;
+  top: 219px;
+  width: 371px;
+  height: 42px;
+  line-height: 42px;
+}
+
+.rectangle-232 {
+  background: #5a6474;
+  border-radius: 10px;
+  width: 91.57px;
+  height: 26px;
+  position: absolute;
+  left: 491px;
+  top: 227px;
+}
+
+.english {
+  color: #ffffff;
+  text-align: left;
+  font-family: "Poppins-Bold", sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  position: absolute;
+  left: 501px;
+  top: 227px;
+  width: 91.57px;
+  height: 26px;
+  line-height: 26px;
+}
+
+.chat-gpt-image-25-nov-2025-20-28-21-42 {
+  width: 11px;
+  height: 11px;
+  position: absolute;
+  left: 560px;
+  top: 235px;
+  transform-origin: 0 0;
+  transform: rotate(-90deg) scale(1, -1);
+  object-fit: cover;
+}
+
+/* DARK MODE */
+.rectangle-9 {
+  background: #404957;
+  border-radius: 10px;
+  width: 371px;
+  height: 42px;
+  position: absolute;
+  left: 216px;
+  top: 101px;
+}
+
+.dark-mode {
+  color: #ffffff;
+  text-align: left;
+  font-family: "Poppins-Bold", sans-serif;
+  font-size: 17px;
+  font-weight: 700;
+  position: absolute;
+  left: 231px;
+  top: 101px;
+  width: 371px;
+  height: 42px;
+  line-height: 42px;
+}
+
+.rectangle-102 {
+  background: #8bafde;
+  border-radius: 15px;
+  width: 43px;
+  height: 22px;
+  position: absolute;
+  left: 530px;
+  top: 111px;
+}
+
+.rectangle-11 {
+  background: #ffffff;
+  border-radius: 15px;
+  width: 22px;
+  height: 22px;
+  position: absolute;
+  left: 551px;
+  top: 111px;
+}
+
+/* HEADER */
+.turn-back-1-1 {
+  width: 48px;
+  height: 48px;
+  position: absolute;
+  left: 27px;
+  top: 23px;
+  object-fit: cover;
+}
+
+.settings2 {
+  color: #ffffff;
+  text-align: left;
+  font-family: "Poppins-Bold", sans-serif;
+  font-size: 40px;
+  font-weight: 700;
+  position: absolute;
+  left: 315px;
+  top: 17px;
+}

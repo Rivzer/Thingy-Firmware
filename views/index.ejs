@@ -1,16 +1,88 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <link rel="stylesheet" href="/index/css/style.css">
 </head>
+<script>
+    const tiles = [
+        document.querySelector(".ellipse-26"), // console deck
+        document.querySelector(".ellipse-25"), // spotify
+        document.querySelector(".ellipse-24"), // weather
+        document.querySelector(".ellipse-23"), // clock
+        document.querySelector(".ellipse-22"), // picture frame
+        document.querySelector(".ellipse-2"),  // settings
+    ];
+
+    let index = 0;
+
+    function setFocus(i) {
+        tiles.forEach(t => t.classList.remove("is-focused"));
+        tiles[i].classList.add("is-focused");
+    }
+
+    // example for testing with arrow keys
+    document.addEventListener("keydown", (e) => {
+        if (e.key === "ArrowRight") onScrollWheel(1);
+        if (e.key === "ArrowLeft") onScrollWheel(-1);
+    });
+
+    function onScrollWheel(delta) {
+        index = (index + delta + tiles.length) % tiles.length;
+        setFocus(index);
+    }
+
+    // Initial highlight on page load
+    setFocus(index);
+</script>
+
 <body>
-    <h1><a href="/spotify">Spotify</a></h1>
-    <h1><a href="/consoledeck">Console Deck</a></h1>
-    <h1><a href="/clock">Clock</a></h1>
-    <h1><a href="/pictureframe">Picture Frame</a></h1>
-    <h1><a href="/weather">Weather</a></h1>
-    <h1><a href="/settings">Settings</a></h1>
+<div class="dashboard-v-5">
+
+    <!-- SETTINGS -->
+    <div class="tile settings-tile" onclick="window.location='/settings'">
+        <div class="ellipse-2"></div>
+        <img class="imageedit-8-2291340055-1" src="/index/img/settings.png" />
+        <div class="settings">Settings</div>
+    </div>
+
+    <!-- PICTURE FRAME -->
+    <div class="tile pictureframe-tile" onclick="window.location='/pictureframe'">
+        <div class="ellipse-22"></div>
+        <img class="imageedit-7-8892221508-1" src="/index/img/picture_frame.png" />
+        <div class="picture-frame">Picture Frame</div>
+    </div>
+
+    <!-- CLOCK -->
+    <div class="tile clock-tile" onclick="window.location='/clock'">
+        <div class="ellipse-23"></div>
+        <img class="imageedit-3-4829322221-1" src="/index/img/clock.png" />
+        <div class="clock">Clock</div>
+    </div>
+
+    <!-- WEATHER -->
+    <div class="tile weather-tile" onclick="window.location='/weather'">
+        <div class="ellipse-24"></div>
+        <img class="imageedit-6-7326754813-1" src="/index/img/weather.png" />
+        <div class="weather">Weather</div>
+    </div>
+
+    <!-- SPOTIFY -->
+    <div class="tile spotify-tile" onclick="window.location='/spotify'">
+        <div class="ellipse-25"></div>
+        <img class="spotify-1-1" src="/index/img/spotify.png" />
+        <div class="spotify">Spotify</div>
+    </div>
+
+    <!-- CONSOLE DECK -->
+    <div class="tile consoledeck-tile" onclick="window.location='/consoledeck'">
+        <div class="ellipse-26"></div>
+        <img class="imageedit-2-6218725443-1" src="/index/img/console_deck.png" />
+        <div class="console-deck">Console Deck</div>
+    </div>
+
+</div>
 </body>
+
+
 </html>

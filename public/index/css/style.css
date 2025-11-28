@@ -1,0 +1,284 @@
+.dashboard-v-5,
+.dashboard-v-5 * {
+  box-sizing: border-box;
+}
+.dashboard-v-5 {
+  background: #202125;
+  height: 480px;
+  position: relative;
+  overflow: hidden;
+}
+.settings {
+  color: #9fa2a7;
+  text-align: center;
+  font-family: "Poppins-Bold", sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  position: absolute;
+  left: 591px;
+  top: 412px;
+}
+.picture-frame {
+  color: #9fa2a7;
+  text-align: center;
+  font-family: "Poppins-Bold", sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  position: absolute;
+  left: 327px;
+  top: 412px;
+}
+.clock {
+  color: #9fa2a7;
+  text-align: center;
+  font-family: "Poppins-Bold", sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  position: absolute;
+  left: 136px;
+  top: 412px;
+}
+.group-20 {
+  position: absolute;
+  inset: 0;
+}
+.ellipse-2 {
+  background: #48494d;
+  border-radius: 50%;
+  width: 142px;
+  height: 142px;
+  position: absolute;
+  left: 563px;
+  top: 261px;
+}
+.imageedit-8-2291340055-1 {
+  width: 80px;
+  height: 80px;
+  position: absolute;
+  left: 594px;
+  top: 292px;
+  object-fit: cover;
+  aspect-ratio: 1;
+}
+.group-19 {
+  position: absolute;
+  inset: 0;
+}
+.ellipse-22 {
+  background: #816a2d;
+  border-radius: 50%;
+  width: 142px;
+  height: 142px;
+  position: absolute;
+  left: 329px;
+  top: 261px;
+}
+.imageedit-7-8892221508-1 {
+  width: 80px;
+  height: 80px;
+  position: absolute;
+  left: 360px;
+  top: 292px;
+  object-fit: cover;
+  aspect-ratio: 1;
+}
+.group-21 {
+  position: absolute;
+  inset: 0;
+}
+.ellipse-23 {
+  background: #774443;
+  border-radius: 50%;
+  width: 142px;
+  height: 142px;
+  position: absolute;
+  left: 95px;
+  top: 261px;
+}
+.imageedit-3-4829322221-1 {
+  width: 80px;
+  height: 80px;
+  position: absolute;
+  left: 126px;
+  top: 292px;
+  object-fit: cover;
+  aspect-ratio: 1;
+}
+.weather {
+  color: #9fa2a7;
+  text-align: center;
+  font-family: "Poppins-Bold", sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  position: absolute;
+  left: 588px;
+  top: 210px;
+}
+.spotify {
+  color: #9fa2a7;
+  text-align: center;
+  font-family: "Poppins-Bold", sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  position: absolute;
+  left: 363px;
+  top: 210px;
+}
+.console-deck {
+  color: #9fa2a7;
+  text-align: center;
+  font-family: "Poppins-Bold", sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  position: absolute;
+  left: 95px;
+  top: 210px;
+}
+.group-17 {
+  position: absolute;
+  inset: 0;
+}
+.ellipse-24 {
+  background: #376467;
+  border-radius: 50%;
+  width: 142px;
+  height: 142px;
+  position: absolute;
+  left: 563px;
+  top: 59px;
+}
+.imageedit-6-7326754813-1 {
+  width: 80px;
+  height: 80px;
+  position: absolute;
+  left: 594px;
+  top: 90px;
+  object-fit: cover;
+  aspect-ratio: 1;
+}
+.group-16 {
+  position: absolute;
+  inset: 0;
+}
+.ellipse-25 {
+  background: #3f624a;
+  border-radius: 50%;
+  width: 142px;
+  height: 142px;
+  position: absolute;
+  left: 329px;
+  top: 59px;
+}
+.spotify-1-1 {
+  width: 80px;
+  height: 80px;
+  position: absolute;
+  left: 360px;
+  top: 90px;
+  object-fit: cover;
+  aspect-ratio: 1;
+}
+.group-18 {
+  position: absolute;
+  inset: 0;
+}
+.ellipse-26 {
+  background: #63447f;
+  border-radius: 50%;
+  width: 142px;
+  height: 142px;
+  position: absolute;
+  left: 95px;
+  top: 59px;
+}
+.imageedit-2-6218725443-1 {
+  width: 80px;
+  height: 80px;
+  position: absolute;
+  left: 125px;
+  top: 90px;
+  object-fit: cover;
+  aspect-ratio: 1;
+}
+.thingy {
+  color: #2a78f8;
+  text-align: center;
+  font-family: "Poppins-Bold", sans-serif;
+  font-size: 96px;
+  font-weight: 700;
+  position: absolute;
+  left: -3176px;
+  top: -890px;
+  width: 497px;
+  height: 136px;
+}
+
+/* Smooth animation on the round tiles */
+.ellipse-2,
+.ellipse-22,
+.ellipse-23,
+.ellipse-24,
+.ellipse-25,
+.ellipse-26 {
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  cursor: pointer;
+}
+
+/* Icons also animate a bit */
+.imageedit-8-2291340055-1,
+.imageedit-7-8892221508-1,
+.imageedit-3-4829322221-1,
+.imageedit-6-7326754813-1,
+.spotify-1-1,
+.imageedit-2-6218725443-1 {
+  transition: transform 0.18s ease;
+  pointer-events: none; /* so hover is captured by the circle */
+}
+
+/* When you hover the circle: grow + glow + bump the icon */
+.ellipse-2:hover,
+.ellipse-22:hover,
+.ellipse-23:hover,
+.ellipse-24:hover,
+.ellipse-25:hover,
+.ellipse-26:hover,
+.ellipse-2.is-focused,
+.ellipse-22.is-focused,
+.ellipse-23.is-focused,
+.ellipse-24.is-focused,
+.ellipse-25.is-focused,
+.ellipse-26.is-focused {
+  transform: scale(1.06);
+  box-shadow: 0 0 18px rgba(0, 0, 0, 0.6);
+}
+
+/* Match each circle to its icon for hover/focus effect */
+.ellipse-2:hover ~ .imageedit-8-2291340055-1,
+.ellipse-2.is-focused ~ .imageedit-8-2291340055-1 {
+  transform: scale(1.08);
+}
+
+.ellipse-22:hover ~ .imageedit-7-8892221508-1,
+.ellipse-22.is-focused ~ .imageedit-7-8892221508-1 {
+  transform: scale(1.08);
+}
+
+.ellipse-23:hover ~ .imageedit-3-4829322221-1,
+.ellipse-23.is-focused ~ .imageedit-3-4829322221-1 {
+  transform: scale(1.08);
+}
+
+.ellipse-24:hover ~ .imageedit-6-7326754813-1,
+.ellipse-24.is-focused ~ .imageedit-6-7326754813-1 {
+  transform: scale(1.08);
+}
+
+.ellipse-25:hover ~ .spotify-1-1,
+.ellipse-25.is-focused ~ .spotify-1-1 {
+  transform: scale(1.08);
+}
+
+.ellipse-26:hover ~ .imageedit-2-6218725443-1,
+.ellipse-26.is-focused ~ .imageedit-2-6218725443-1 {
+  transform: scale(1.08);
+}

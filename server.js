@@ -20,7 +20,8 @@ const CERT_DIR = path.join(APP_ROOT, "keys");
 const CERT_PATH = path.join(CERT_DIR, "cert.pem");
 const KEY_PATH = path.join(CERT_DIR, "key.pem");
 const FIRMWARE_FILE = path.join(APP_ROOT, "firmware.json");
-let currentFirmware = { version: "0.0.0", url: "https://raw.githubusercontent.com/Rivzer/Thingy-Firmware/main/firmware.json" };
+let currentFirmware = null;
+let firmwareError = null;
 
 // Spotify environment config
 const HOST_IP = getLocalIP();
@@ -37,6 +38,7 @@ let deviceConfig = {
 if (fs.existsSync(DEVICE_CONFIG_FILE)) {
     try {
         deviceConfig = JSON.parse(fs.readFileSync(DEVICE_CONFIG_FILE, "utf8"));
+        console.log("✔ device_config.json loaded:");
     } catch {
         console.log("⚠️ Could not read device_config.json, using defaults.");
     }
@@ -51,14 +53,36 @@ else if (!fs.existsSync(DEVICE_CONFIG_FILE)) {
         time_zone: "Europe/London"
     };
 
+    console.log("✔ device_config.json created:");
+
     fs.writeFileSync(DEVICE_CONFIG_FILE, JSON.stringify(deviceConfig, null, 2));
+    deviceConfig = JSON.parse(fs.readFileSync(DEVICE_CONFIG_FILE, "utf8"));
+    console.log("✔ device_config.json loaded:");
 }
 
-if (fs.existsSync(FIRMWARE_FILE)) {
+if (!fs.existsSync(FIRMWARE_FILE)) {
+    firmwareError = "firmware.json not found";
+    console.error("❌", firmwareError);
+} else {
     try {
-        currentFirmware = JSON.parse(fs.readFileSync(FIRMWARE_FILE, "utf8"));
-    } catch {
-        console.log("⚠️ Could not read firmware.json, using fallback version 0.0.0");
+        const raw = fs.readFileSync(FIRMWARE_FILE, "utf8");
+        const parsed = JSON.parse(raw);
+
+        if (!parsed.version) {
+            firmwareError = "firmware.json missing required field: version";
+        } else if (!parsed.url) {
+            firmwareError = "firmware.json missing required field: url";
+        } else {
+            currentFirmware = parsed;
+        }
+    } catch (e) {
+        firmwareError = "Invalid firmware.json: " + e.message;
+    }
+
+    if (firmwareError) {
+        console.error("❌", firmwareError);
+    } else {
+        console.log("✔ firmware.json loaded:");
     }
 }
 
@@ -175,29 +199,48 @@ function compareVersions(a, b) {
 }
 
 async function checkFirmwareUpdate() {
+    if (firmwareError || !currentFirmware) {
+        return {
+            error: true,
+            message: firmwareError || "Firmware not loaded",
+            current: null,
+            latest: null,
+            updateAvailable: false,
+        };
+    }
+
     try {
         const response = await axios.get(currentFirmware.url, { timeout: 5000 });
         const manifest = response.data;
 
-        const latest = manifest.latest;
-        const downloadUrl = manifest.url;
+        if (!manifest.version) {
+            return {
+                error: true,
+                message: "Remote firmware manifest missing 'version'",
+                current: currentFirmware.version,
+                latest: null,
+                updateAvailable: false,
+            };
+        }
 
+        const latest = manifest.version;
         const cmp = compareVersions(latest, currentFirmware.version);
 
         return {
+            error: false,
+            message: null,
             current: currentFirmware.version,
             latest,
-            downloadUrl,
             updateAvailable: cmp === 1,
         };
     } catch (err) {
         console.log("Firmware check failed:", err.message);
         return {
+            error: true,
+            message: "Remote check failed: " + err.message,
             current: currentFirmware.version,
             latest: null,
-            downloadUrl: null,
             updateAvailable: false,
-            error: true,
         };
     }
 }
@@ -339,6 +382,32 @@ app.get("/callback", async (req, res) => {
     }
 });
 
+// ===== API: VOLUME CONTROL =====
+app.get("/api/volume", async (req, res) => {
+    const token = await getValidToken();
+    if (!token) return res.status(401).send("Not logged in");
+
+    const raw = req.query.percent;
+    const percent = Number(raw);
+
+    if (Number.isNaN(percent) || percent < 0 || percent > 100) {
+        return res.status(400).send("Invalid volume percent");
+    }
+
+    try {
+        await axios.put(
+            `https://api.spotify.com/v1/me/player/volume?volume_percent=${Math.round(percent)}`,
+            null,
+            { headers: { Authorization: `Bearer ${token}` } }
+        );
+
+        res.send("OK");
+    } catch (err) {
+        console.log("Volume error:", err.response?.data || err.message);
+        res.status(500).send("Error setting volume");
+    }
+});
+
 // ===== API: PLAYBACK STATUS =====
 app.get("/api/playback", async (req, res) => {
     const token = await getValidToken();
@@ -364,6 +433,9 @@ app.get("/api/playback", async (req, res) => {
                 id: null,
                 isPlaying: !!data.is_playing,
                 type: "episode",
+                volume: typeof data.device?.volume_percent === "number"
+                    ? data.device.volume_percent
+                    : null,
             });
         }
 
@@ -409,7 +481,11 @@ app.get("/api/playback", async (req, res) => {
             id: item.id,
             isPlaying: !!data.is_playing,
             type: item.type,
+            volume: typeof data.device?.volume_percent === "number"
+                ? data.device.volume_percent
+                : null,
         });
+
     } catch (e) {
         console.log("Playback error:", e.response?.data || e.message);
         res.json({});
