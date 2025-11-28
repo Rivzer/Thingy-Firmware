@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Device Wi-Fi Setup</title>
+
+    <style>
+        body {
+            font-family: system-ui, sans-serif;
+            background: radial-gradient(circle at top, #0f172a, #020617 55%);
+            color: #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .card {
+            background: rgba(15, 23, 42, 0.98);
+            border-radius: 16px;
+            padding: 24px;
+            width: 350px;
+            box-shadow: 0 24px 80px rgba(0,0,0,0.75);
+        }
+        .qr-box img {
+            width: 200px;
+            display: block;
+            margin: 0 auto;
+        }
+        input {
+            width: 100%;
+            padding: 7px;
+            margin-top: 7px;
+            border-radius: 6px;
+            border: 1px solid #374151;
+            background: #020617;
+            color: #fff;
+        }
+        button {
+            margin-top: 16px;
+            width: 100%;
+            padding: 10px;
+            border-radius: 999px;
+            border: none;
+            background: #22c55e;
+            color: #022c22;
+            font-weight: bold;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+<div class="card">
+    <h2>Wi-Fi Setup</h2>
+
+    <p>Scan the QR code to connect to your device Wi-Fi:</p>
+
+    <div class="qr-box">
+        <img src="<%= qr %>" />
+    </div>
+
+    <p><strong>SSID:</strong> <%= ssid %></p>
+    <p><strong>Password:</strong> <%= password || "(none)" %></p>
+
+    <hr />
+
+    <form method="POST" action="/wifi-setup">
+        <label>Home Wi-Fi SSID</label>
+        <input name="homeSsid" placeholder="e.g. MyHomeWifi" />
+
+        <label>Home Wi-Fi password</label>
+        <input name="homePass" type="password" placeholder="••••••••" />
+
+        <button type="submit">Finish Setup</button>
+    </form>
+</div>
+</body>
+</html>
