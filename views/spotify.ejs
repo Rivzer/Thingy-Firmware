@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Thingy Spotify Player</title>
+    <style>
+        body {
+            background: #111;
+            color: white;
+            font-family: Arial;
+            text-align: center;
+        }
+
+        img {
+            border-radius: 12px;
+            margin-top: 20px;
+        }
+
+        button {
+            padding: 20px;
+            margin: 10px;
+            font-size: 28px;
+            border: none;
+            background: #1DB954;
+            color: white;
+            border-radius: 12px;
+        }
+
+        small {
+            opacity: 0.3;
+        }
+    </style>
+    <link rel="stylesheet" href="/global.css">
+</head>
+
+<body>
+
+    <div id="loginSection">
+        <h1>Scan om in te loggen:</h1>
+        <img id="qrImg" width="300">
+        <p id="qrUrl"></p>
+    </div>
+
+    <div id="playerSection" style="display:none;">
+        <h1 id="track">-</h1>
+        <h2 id="artist">-</h2>
+        <img id="cover" width="250">
+
+        <br>
+
+        <div>
+            <span id="currentTime">0:00</span>
+            <input id="timeline" type="range" min="0" max="100" value="0" style="width:300px;">
+            <span id="totalTime">0:00</span>
+        </div>
+
+        <br>
+
+        <button onclick="prev()">⏮</button>
+        <button onclick="playpause()">▶/⏸</button>
+        <button onclick="nextTrack()">⏭</button>
+
+        <br><br>
+
+        <button id="likeBtn" style="font-size:32px; background:none;">♡</button>
+    </div>
+
+
+    <script>
+        function msToTime(ms) {
+            const m = Math.floor(ms / 60000);
+            const s = Math.floor((ms % 60000) / 1000);
+            return `${m}:${s.toString().padStart(2, '0')}`;
+        }
+
+        let currentTrackId = "";
+        let lastProgress = 0;
+        let lastTimestamp = 0;
+        let trackDuration = 0;
+        let isPlaying = false;
+
+        async function checkLoginState() {
+            const r = await fetch("/api/state");
+            const d = await r.json();
+
+            if (d.loggedIn) {
+                document.getElementById("loginSection").style.display = "none";
+                document.getElementById("playerSection").style.display = "block";
+                refreshPlayer(); // initial load
+            } else {
+                document.getElementById("loginSection").style.display = "block";
+                document.getElementById("playerSection").style.display = "none";
+                loadQR();
+            }
+        }
+
+        async function loadQR() {
+            const r = await fetch("/api/qr");
+            const d = await r.json();
+            document.getElementById("qrImg").src = d.qr;
+            document.getElementById("qrUrl").innerText = d.url;
+        }
+
+        async function refreshPlayer() {
+            const r = await fetch("/api/playback");
+            const d = await r.json();
+
+            // Niks aan het spelen
+            if (!d || (!d.track && !d.artist)) {
+                document.getElementById("track").innerText = "Episode playing";
+                document.getElementById("artist").innerText = "No details available from Spotify";
+                return;
+            }
+
+            console.log("frontend playback:", d);
+
+            currentTrackId = d.id || "";
+
+            document.getElementById("track").innerText = d.track || "-";
+            document.getElementById("artist").innerText = d.artist || "-";
+
+            if (d.cover) {
+                document.getElementById("cover").src = d.cover;
+            }
+
+            const timeline = document.getElementById("timeline");
+
+            trackDuration = d.duration || 0;
+            lastProgress = d.progress || 0;
+            lastTimestamp = Date.now();
+            isPlaying = !!d.isPlaying;
+
+            timeline.max = trackDuration || 0;
+            timeline.value = lastProgress || 0;
+
+            document.getElementById("currentTime").innerText = msToTime(lastProgress);
+            document.getElementById("totalTime").innerText = msToTime(trackDuration);
+
+            // Like only for tracks, hide for episodes
+            const likeBtn = document.getElementById("likeBtn");
+            if (d.type === "track") {
+                likeBtn.style.display = "inline-block";
+                likeBtn.innerText = d.liked ? "❤️" : "♡";
+            } else {
+                likeBtn.style.display = "none";
+            }
+        }
+
+        function smoothUpdate() {
+            const timeline = document.getElementById("timeline");
+            if (!timeline || !trackDuration) return;
+
+            let current = lastProgress;
+
+            if (isPlaying) {
+                const elapsed = Date.now() - lastTimestamp;
+                current = lastProgress + elapsed;
+                if (current > trackDuration) current = trackDuration;
+            }
+
+            timeline.value = current;
+            document.getElementById("currentTime").innerText = msToTime(current);
+        }
+
+        // SEEK on drag
+        document.addEventListener("DOMContentLoaded", () => {
+            const timeline = document.getElementById("timeline");
+            timeline.addEventListener("input", function () {
+                fetch(`/api/seek?position=${this.value}`);
+                // immediately update local progress base:
+                lastProgress = Number(this.value);
+                lastTimestamp = Date.now();
+            });
+
+            const likeBtn = document.getElementById("likeBtn");
+            likeBtn.onclick = function () {
+                if (!currentTrackId) return;
+
+                if (this.innerText === "♡") {
+                    fetch(`/api/like?track=${currentTrackId}`);
+                    this.innerText = "❤️";
+                } else {
+                    fetch(`/api/unlike?track=${currentTrackId}`);
+                    this.innerText = "♡";
+                }
+            };
+        });
+
+        // control buttons
+        async function playpause() { fetch("/api/playpause"); }
+        async function nextTrack() { fetch("/api/next"); }
+        async function prev() { fetch("/api/prev"); }
+
+        // polling
+        setInterval(refreshPlayer, 3000);  // real data from Spotify
+        setInterval(smoothUpdate, 100);    // smooth local animation
+
+        checkLoginState();
+    </script>
+
+
+</body>
+
+</html>
