@@ -50,7 +50,9 @@ else if (!fs.existsSync(DEVICE_CONFIG_FILE)) {
             ssid: "",
             password: ""
         },
-        time_zone: "Europe/London"
+        device_name: "Raspberry Pi Zero 2W",
+        time_zone: "Europe/London",
+        time_format_24h: true
     };
 
     console.log("✔ device_config.json created:");
@@ -703,6 +705,16 @@ app.get("/api/unlike", async (req, res) => {
 
     res.send("OK");
 });
+
+app.get("/api/device-config", (req, res) => {
+    try {
+        const cfg = JSON.parse(fs.readFileSync("device_config.json", "utf8"));
+        res.json({ time24: cfg.time_format_24h !== false }); // default = 24h
+    } catch (e) {
+        res.json({ time24: true }); // fallback
+    }
+});
+
 
 // ===== START HTTPS SERVER =====
 ensureCertificates();

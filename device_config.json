@@ -5,5 +5,6 @@
     "password": "555"
   },
   "device_name": "Raspberry Pi Zero 2W",
-  "time_zone": "Europe/London"
+  "time_zone": "Europe/London",
+  "time_format_24h": false
 }

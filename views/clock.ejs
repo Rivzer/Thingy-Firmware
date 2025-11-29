@@ -1,22 +1,83 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/clock/css/style.css">
     <link rel="stylesheet" href="/global.css">
-    <title>Document</title>
+    <title>Clock</title>
 </head>
+
 <body>
     <div class="clock">
         <img class="background-image" src="/clock/img/example.jpg"></img>
         <img onclick="history.back()" class="back-button" src="/spotify/img/turn-back.png"></img>
-        <div class="time">13:33</div>
-        <div class="date">13th Oct</div>
+        <div class="time">--:--</div>
+        <div class="date">-- ---</div>
     </div>
 
     <script>
+        let use24h = true; // default
 
+        // Load format from device_config.json
+        async function loadTimeFormat() {
+            try {
+                const r = await fetch("/api/device-config");
+                const d = await r.json();
+                use24h = d.time24;
+            } catch (e) {
+                console.warn("Could not load time format:", e);
+            }
+        }
+
+        function getDayWithSuffix(day) {
+            if (day >= 11 && day <= 13) return day + "th";
+            const lastDigit = day % 10;
+            if (lastDigit === 1) return day + "st";
+            if (lastDigit === 2) return day + "nd";
+            if (lastDigit === 3) return day + "rd";
+            return day + "th";
+        }
+
+        function updateClock() {
+            const now = new Date();
+
+            const timeEl = document.querySelector('.time');
+            const dateEl = document.querySelector('.date');
+
+            let hours = now.getHours();
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+
+            let suffix = "";
+
+            if (!use24h) {
+                suffix = hours >= 12 ? " PM" : " AM";
+                hours = hours % 12;
+                if (hours === 0) hours = 12;
+            }
+
+            const hoursStr = hours.toString().padStart(2, '0');
+            timeEl.textContent = `${hoursStr}:${minutes}${suffix}`;
+
+            // Date
+            const day = now.getDate();
+            const dayWithSuffix = getDayWithSuffix(day);
+            const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+            const monthName = monthNames[now.getMonth()];
+
+            dateEl.textContent = `${dayWithSuffix} ${monthName}`;
+        }
+
+        async function startClock() {
+            await loadTimeFormat();  // Wait for setting
+            updateClock();
+            setInterval(updateClock, 1000);
+        }
+
+        startClock();
     </script>
 </body>
+
 </html>
