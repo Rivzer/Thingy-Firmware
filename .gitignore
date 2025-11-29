@@ -42,3 +42,6 @@ firmware.json
 dist/
 build/
 .cache/
+
+# Pepa commands
+aaa_coms
