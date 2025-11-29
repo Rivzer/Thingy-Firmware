@@ -1,0 +1,234 @@
+.spotify-home-page-playing-song,
+.spotify-home-page-playing-song * {
+  box-sizing: border-box;
+}
+.spotify-home-page-playing-song {
+  background: #141414;
+  height: 480px;
+  position: relative;
+  overflow: hidden;
+}
+.rectangle-25 {
+  background: #c4c4c4;
+  border-radius: 35px;
+  width: 350px;
+  height: 400px;
+  position: absolute;
+  left: 429px;
+  top: 48px;
+  filter: blur(1.25px);
+}
+.group-28 {
+  position: absolute;
+  inset: 0;
+}
+.forward-button-1 {
+  width: 40px;
+  height: 40px;
+  position: absolute;
+  left: 686px;
+  top: 325px;
+  transform-origin: 0 0;
+  transform: rotate(0deg) scale(1, -1);
+  object-fit: cover;
+  aspect-ratio: 1;
+}
+.group-22 {
+  width: 200px;
+  height: 10px;
+  position: static;
+}
+.rectangle-16 {
+  background: #2e2e2f;
+  border-radius: 12px;
+  width: 200px;
+  height: 10px;
+  position: absolute;
+  left: 504px;
+  top: 362px;
+}
+.rectangle-17 {
+  background: #ffffff;
+  border-radius: 12px;
+  width: 85.47px;
+  height: 10px;
+  position: absolute;
+  left: 504px;
+  top: 362px;
+}
+._3-23 {
+  color: #ffffff;
+  text-align: center;
+  font-family: "Poppins-Bold", sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  position: absolute;
+  left: 722px;
+  top: 355px;
+}
+._1-34 {
+  color: #ffffff;
+  text-align: center;
+  font-family: "Poppins-Bold", sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  position: absolute;
+  left: 456px;
+  top: 355px;
+}
+.forward-button-2 {
+  width: 40px;
+  height: 40px;
+  position: absolute;
+  left: 522px;
+  top: 325px;
+  transform-origin: 0 0;
+  transform: rotate(-180deg) scale(1, 1);
+  object-fit: cover;
+  aspect-ratio: 1;
+}
+.pause-1 {
+  width: 60px;
+  height: 60px;
+  position: absolute;
+  left: 574px;
+  top: 265px;
+  object-fit: cover;
+  aspect-ratio: 1;
+}
+.group-24 {
+  position: absolute;
+  inset: 0;
+}
+.artist {
+  color: #dfdfdf;
+  text-align: center;
+  font-family: "Poppins-Bold", sans-serif;
+  font-size: 24px;
+  font-weight: 700;
+  position: absolute;
+  left: 556px;
+  top: 158px;
+  width: 96px;
+  height: 40px;
+}
+.song-name {
+  color: #dfdfdf;
+  text-align: center;
+  font-family: "Poppins-Bold", sans-serif;
+  font-size: 36px;
+  font-weight: 700;
+  position: absolute;
+  left: 470px;
+  top: 99px;
+  width: 268px;
+  height: 59px;
+}
+._10-47 {
+  color: #ffffff;
+  text-align: center;
+  font-family: "Poppins-Bold", sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  position: absolute;
+  left: 40px;
+  top: 25px;
+}
+.vector {
+  width: 6%;
+  height: 48px;
+  position: absolute;
+  right: 47%;
+  left: 47%;
+  top: calc(50% - 224px);
+  overflow: visible;
+  aspect-ratio: 1;
+}
+.recent-played {
+  position: absolute;
+  inset: 0;
+}
+.rectangle-21 {
+  background: #d75805;
+  border-radius: 20px;
+  width: 153px;
+  height: 152px;
+  position: absolute;
+  left: 236px;
+  top: 276px;
+}
+.history-1 {
+  width: 66px;
+  height: 66px;
+  position: absolute;
+  left: 280px;
+  top: 319px;
+  object-fit: cover;
+  aspect-ratio: 1;
+}
+.search {
+  position: absolute;
+  inset: 0;
+}
+.rectangle-19 {
+  background: #3a3566;
+  border-radius: 20px;
+  width: 153px;
+  height: 153px;
+  position: absolute;
+  left: 236px;
+  top: 101px;
+}
+.search-1 {
+  width: 66px;
+  height: 66px;
+  position: absolute;
+  left: 280px;
+  top: 145px;
+  object-fit: cover;
+  aspect-ratio: 1;
+}
+.liked-songs {
+  position: absolute;
+  inset: 0;
+}
+.rectangle-18 {
+  background: #337f60;
+  border-radius: 20px;
+  width: 153px;
+  height: 153px;
+  position: absolute;
+  left: 54px;
+  top: 101px;
+}
+.heart-2-1 {
+  width: 66px;
+  height: 66px;
+  position: absolute;
+  left: 98px;
+  top: 151px;
+  object-fit: cover;
+  aspect-ratio: 1;
+}
+.playlist {
+  position: absolute;
+  inset: 0;
+}
+.rectangle-20 {
+  background: #293c67;
+  border-radius: 20px;
+  width: 153px;
+  height: 152px;
+  position: absolute;
+  left: 54px;
+  top: 276px;
+}
+.list-text-1 {
+  width: 66px;
+  height: 66px;
+  position: absolute;
+  left: 98px;
+  top: 319px;
+  object-fit: cover;
+  aspect-ratio: 1;
+}
