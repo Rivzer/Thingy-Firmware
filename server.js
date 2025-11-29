@@ -285,13 +285,57 @@ app.get("/consoledeck", (req, res) => {
     res.render("consoledeck");
 });
 
-app.get("/spotify", (req, res) => {
+app.get("/spotify", async (req, res) => {
     const view = req.query.view;
 
     if (view === "nowplaying") {
         return res.render("spotify-nowplaying");
     }
 
+    if (view === "likedplaylist") {
+        const token = await getValidToken();
+
+        if (!token) {
+            return res.render("spotify-liked-playlist", {
+                tracks: [],
+                notLoggedIn: true,
+                error: null,
+                initialOffset: 0,
+                total: 0,
+            });
+        }
+
+        try {
+            const limit = 50;
+            const r = await axios.get("https://api.spotify.com/v1/me/tracks", {
+                headers: { Authorization: `Bearer ${token}` },
+                params: { limit, offset: 0 },
+            });
+
+            const items = r.data.items || [];
+            const total = r.data.total || items.length;
+
+            return res.render("spotify-liked-playlist", {
+                tracks: items,          // eerste 50
+                notLoggedIn: false,
+                error: null,
+                initialOffset: limit,   // start offset voor volgende load
+                total,                  // totaal aantal liked songs
+            });
+        } catch (e) {
+            console.log("Liked tracks error:", e.response?.data || e.message);
+
+            return res.render("spotify-liked-playlist", {
+                tracks: [],
+                notLoggedIn: false,
+                error: "Kon je liked nummers niet ophalen.",
+                initialOffset: 0,
+                total: 0,
+            });
+        }
+    }
+
+    // default dashboard
     res.render("spotify-dashboard");
 });
 
@@ -343,6 +387,61 @@ app.get("/api/qr", async (req, res) => {
     const qr = await QRCode.toDataURL(authUrl);
 
     res.json({ qr, url: authUrl });
+});
+
+// ===== API: SPOTIFY PLAY TRACK =====
+app.get("/api/play-track", async (req, res) => {
+    const token = await getValidToken();
+    if (!token) return res.status(401).send("Not logged in");
+
+    const id = req.query.track;
+    if (!id) return res.status(400).send("Missing track id");
+
+    try {
+        // Speel deze specifieke track op het actieve apparaat
+        await axios.put(
+            "https://api.spotify.com/v1/me/player/play",
+            {
+                uris: [`spotify:track:${id}`],
+            },
+            {
+                headers: { Authorization: `Bearer ${token}` },
+            }
+        );
+
+        res.send("OK");
+    } catch (err) {
+        console.log("Play track error:", err.response?.data || err.message);
+        res.status(500).send("Error playing track");
+    }
+});
+
+// ===== API: SPOTIFY GET LIKED SONGS =====
+app.get("/api/liked", async (req, res) => {
+    const token = await getValidToken();
+    if (!token) {
+        return res.status(401).json({ error: "Not logged in" });
+    }
+
+    const limit = 50; // Spotify max
+    const offset = Number(req.query.offset) || 0;
+
+    try {
+        const r = await axios.get("https://api.spotify.com/v1/me/tracks", {
+            headers: { Authorization: `Bearer ${token}` },
+            params: { limit, offset },
+        });
+
+        res.json({
+            items: r.data.items || [],
+            total: r.data.total || 0,
+            nextOffset: offset + limit,
+            hasMore: (offset + limit) < (r.data.total || 0),
+        });
+    } catch (e) {
+        console.log("Liked tracks API error:", e.response?.data || e.message);
+        res.status(500).json({ error: "Failed to fetch liked tracks" });
+    }
 });
 
 // ===== API: SPOTIFY CALLBACK =====

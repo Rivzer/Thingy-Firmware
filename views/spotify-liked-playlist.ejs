@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <link rel="stylesheet" href="/spotify/css/likedplaylist.css">
+    <link rel="stylesheet" href="/global.css">
+</head>
+
+<body>
+    <div class="spotify-liked-playlist">
+        <img class="turn-back-1-3" src="/spotify/img/turn-back.png" />
+        <img class="vector" src="/spotify/img/vector.png" />
+        <div class="_10-47">Liked Songs</div>
+
+        <% if (notLoggedIn) { %>
+            <p style="color:white; padding: 90px 20px 0;">
+                Je bent nog niet ingelogd met Spotify. Ga naar het dashboard om in te loggen.
+            </p>
+            <% } else if (error) { %>
+                <p style="color:white; padding: 90px 20px 0;">
+                    <%= error %>
+                </p>
+                <% } else { %>
+
+                    <div class="track-list" id="trackList">
+                        <% tracks.forEach((item, index)=> {
+                            const track = item.track;
+                            if (!track) return;
+
+                            const title = track.name;
+                            const artists = track.artists.map(a => a.name).join(", ");
+                            const cover = (track.album && track.album.images && track.album.images.length)
+                            ? track.album.images[track.album.images.length - 1].url
+                            : "/spotify/img/rectangle-540.png";
+                            %>
+                            <div class="track-row" data-track-id="<%= track.id %>">
+                                <div class="rectangle-53"></div>
+                                <img class="rectangle-54" src="<%= cover %>" />
+                                <div class="u-dikke-mama">
+                                    <%= title %>
+                                </div>
+                                <div class="momoe">
+                                    <%= artists %>
+                                </div>
+                            </div>
+                            <% }) %>
+                    </div>
+
+                    <% } %>
+    </div>
+
+    <% if (!notLoggedIn && !error) { %>
+        <script>
+            const trackListEl = document.getElementById('trackList');
+            let offset = <%= initialOffset %>;
+            const total = <%= total %>;
+            let loading = false;
+
+            async function loadMoreLiked() {
+                if (loading) return;
+                if (offset >= total) return;
+
+                loading = true;
+
+                try {
+                    const res = await fetch(`/api/liked?offset=${offset}`);
+                    if (!res.ok) throw new Error('HTTP ' + res.status);
+                    const data = await res.json();
+
+                    (data.items || []).forEach(item => {
+                        const track = item.track;
+                        if (!track) return;
+
+                        const title = track.name;
+                        const artists = (track.artists || []).map(a => a.name).join(", ");
+                        const images = track.album && track.album.images ? track.album.images : [];
+                        const cover = images.length
+                            ? images[images.length - 1].url
+                            : "/spotify/img/rectangle-540.png";
+
+                        const row = document.createElement('div');
+                        row.className = 'track-row';
+                        row.dataset.trackId = track.id;
+                        row.innerHTML = `
+                    <div class="rectangle-53"></div>
+                    <img class="rectangle-54" src="${cover}" />
+                    <div class="u-dikke-mama">${title}</div>
+                    <div class="momoe">${artists}</div>
+                `;
+                        trackListEl.appendChild(row);
+                    });
+
+                    offset = data.nextOffset || offset;
+                } catch (e) {
+                    console.error('loadMoreLiked error', e);
+                } finally {
+                    loading = false;
+                }
+            }
+
+            // Klik op track = afspelen
+            trackListEl.addEventListener('click', (e) => {
+                const row = e.target.closest('.track-row');
+                if (!row) return;
+
+                const trackId = row.dataset.trackId;
+                if (!trackId) return;
+
+                fetch(`/api/play-track?track=${encodeURIComponent(trackId)}`)
+                    .then(res => {
+                        if (!res.ok) {
+                            console.error("Failed to start playback");
+                            return;
+                        }
+
+                        // ✅ Redirect after successful play
+                        window.location.href = "/spotify?view=nowplaying";
+                    })
+                    .catch(err => console.error(err));
+            });
+
+
+            // HOVER LOGICA
+            let lastHovered = null;
+
+            function updateHoverOnScroll() {
+                const rect = trackListEl.getBoundingClientRect();
+
+                const mouseX = window.mouseX ?? 0;
+                const mouseY = window.mouseY ?? 0;
+
+                if (mouseY < rect.top || mouseY > rect.bottom) return;
+
+                const el = document.elementFromPoint(mouseX, mouseY);
+                const row = el?.closest('.track-row');
+
+                if (row !== lastHovered) {
+                    if (lastHovered) lastHovered.classList.remove('hover');
+                    if (row) row.classList.add('hover');
+                    lastHovered = row;
+                }
+            }
+
+            window.addEventListener('mousemove', (e) => {
+                window.mouseX = e.clientX;
+                window.mouseY = e.clientY;
+            });
+
+            // 👉 Scroll: hover updaten + checken of we onderaan zijn voor meer laden
+            trackListEl.addEventListener('scroll', () => {
+                updateHoverOnScroll();
+
+                const threshold = 80; // px boven de onderkant
+                if (trackListEl.scrollTop + trackListEl.clientHeight >= trackListEl.scrollHeight - threshold) {
+                    loadMoreLiked();
+                }
+            });
+
+            // Optioneel: ook bij muisbeweging direct hover bijwerken
+            trackListEl.addEventListener('mousemove', updateHoverOnScroll);
+        </script>
+
+        <% } %>
+</body>
+
+</html>
