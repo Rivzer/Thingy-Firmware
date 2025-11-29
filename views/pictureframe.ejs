@@ -6,34 +6,32 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/picture-frame/css/style.css">
     <link rel="stylesheet" href="/global.css">
-    <title>Clock</title>
+    <title>Picture Frame</title>
 </head>
 
 <body>
-    <div class="clock">
-        <img class="background-image" id="pictureFrame" src="/picture-frame/imgs/example.jpg"></img>
-        <img onclick="history.back()" class="back-button" src="/spotify/img/turn-back.png"></img>
+    <div class="picture-frame">
+        <img class="background-image" id="picture" src="/picture-frame/imgs/example.jpg">
+        <img onclick="history.back()" class="back-button" src="/spotify/img/turn-back.png">
     </div>
 
     <script>
         const images = [
             '/picture-frame/imgs/example.jpg',
-            '/picture-frame/imgs/example1.jpg',
-            '/picture-frame/imgs/example2.jpg',
             '/picture-frame/imgs/example3.jpg',
             '/picture-frame/imgs/example4.jpg',
             '/picture-frame/imgs/example5.jpg'
         ];
         
         let currentIndex = 0;
-        const imgElement = document.getElementById('pictureFrame');
+        const imgElement = document.getElementById('picture');
         
         function cycleImage() {
             currentIndex = (currentIndex + 1) % images.length;
             imgElement.src = images[currentIndex];
         }
         
-        setInterval(cycleImage, 1000);
+        setInterval(cycleImage, 15000);
     </script>
 </body>
 
