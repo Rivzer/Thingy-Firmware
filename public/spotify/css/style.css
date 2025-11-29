@@ -92,6 +92,7 @@
   aspect-ratio: 1;
 }
 .rectangle-15 {
+  /* TODO: dont show background when cover found */
   background: #c4c4c4;       /* fallback if there is no cover */
   border-radius: 18px;
   width: 260px;
@@ -99,14 +100,14 @@
   position: absolute;
   left: 62px;
   top: 72px;
-  overflow: hidden;          /* IMPORTANT → cover stays within the frame */
+  overflow: hidden;
 }
 
 /* Album cover image fills the entire card */
 .album-cover {
   width: 100%;
   height: 100%;
-  object-fit: cover;         /* crops neatly, no distortion */
+  object-fit: cover;
   display: block;
 }
 
@@ -302,4 +303,14 @@
   width: 0;
   height: 0;
   background: transparent;
+}
+.vector {
+  width: 6%;
+  height: 48px;
+  position: absolute;
+  right: 47%;
+  left: 47%;
+  top: calc(50% - 224px);
+  overflow: visible;
+  aspect-ratio: 1;
 }

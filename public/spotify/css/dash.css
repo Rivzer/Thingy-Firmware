@@ -65,6 +65,7 @@
   position: absolute;
   left: 722px;
   top: 355px;
+  pointer-events: none;
 }
 ._1-34 {
   color: #ffffff;
@@ -75,6 +76,7 @@
   position: absolute;
   left: 456px;
   top: 355px;
+  pointer-events: none;
 }
 .forward-button-2 {
   width: 40px;
@@ -111,6 +113,7 @@
   top: 158px;
   width: 96px;
   height: 40px;
+  pointer-events: none;
 }
 .song-name {
   color: #dfdfdf;
@@ -123,6 +126,7 @@
   top: 99px;
   width: 268px;
   height: 59px;
+  pointer-events: none;
 }
 ._10-47 {
   color: #ffffff;
