@@ -1,0 +1,28 @@
+{
+    "folder-color.pathColors": [
+        {
+            "folderPath": "Thingy-Firmware\\keys\\",
+            "color": "foldercolorizer.color_0000cc"
+        },
+        {
+            "folderPath": "Thingy-Firmware\\public\\",
+            "color": "foldercolorizer.color_00ccff"
+        },
+        {
+            "folderPath": "Thingy-Firmware\\public\\index\\",
+            "color": "foldercolorizer.color_ff0000"
+        },
+        {
+            "folderPath": "Thingy-Firmware\\public\\settings\\css\\",
+            "color": "foldercolorizer.color_9966ff"
+        },
+        {
+            "folderPath": "Thingy-Firmware\\public\\spotify\\",
+            "color": "foldercolorizer.color_ffcc66"
+        },
+        {
+            "folderPath": "Thingy-Firmware\\views\\",
+            "color": "foldercolorizer.color_cc33ff"
+        }
+    ]
+}
