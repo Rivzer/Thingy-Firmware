@@ -1,18 +1,16 @@
+.picture-frame, .picture-frame * {
+  box-sizing: border-box;
+}
+.picture-frame {
+  background: #202125;
+  height: 480px;
+  position: relative;
+  overflow: hidden;
+  pointer-events: none;
+}
 .background-image {
-  position: absolute;
   width: 100%;
   height: 100%;
+  position: absolute;
   object-fit: cover;
-  object-position: center;
-
-  animation: slowzoom 40s ease-in-out infinite alternate;
-}
-
-@keyframes slowzoom {
-  from {
-    transform: scale(1);
-  }
-  to {
-    transform: scale(1.08);
-  }
 }
