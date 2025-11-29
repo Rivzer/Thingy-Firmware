@@ -6,6 +6,7 @@
   height: 480px;
   position: relative;
   overflow: hidden;
+  pointer-events: none;
 }
 .background-image {
   width: 100%;
@@ -20,9 +21,9 @@
   line-height: 90%;
   font-weight: 700;
   position: absolute;
-  left: 148px;
+  left: 100px;
   top: 154px;
-  width: 503px;
+  width: 600px;
   height: 172px;
 }
 .date {
