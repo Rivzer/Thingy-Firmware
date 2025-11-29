@@ -277,7 +277,6 @@
   opacity: 0;             /* fully invisible but still interactive */
 }
 
-/* Hide track/handle visually */
 .volume-slider::-webkit-slider-runnable-track {
   background: transparent;
 }
