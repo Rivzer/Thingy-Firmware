@@ -286,7 +286,13 @@ app.get("/consoledeck", (req, res) => {
 });
 
 app.get("/spotify", (req, res) => {
-    res.render("spotify");
+    const view = req.query.view;
+
+    if (view === "nowplaying") {
+        return res.render("spotify-nowplaying");
+    }
+
+    res.render("spotify-dashboard");
 });
 
 app.get("/weather", (req, res) => {

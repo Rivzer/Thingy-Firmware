@@ -47,7 +47,7 @@
             <img class="turn-back-1-3" src="/spotify/img/turn-back.png" onclick="window.location='/'" />
 
             <!-- liked indicator (heart) -->
-            <div id="likeBtn" class="ellipse-3">♡</div>
+            <img id="likeBtn" src="" class="ellipse-3" />
 
             <!-- artist + track -->
             <div id="artist" class="tracy-chapman">Artist</div>
@@ -160,8 +160,8 @@
             const likeBtn = document.getElementById("likeBtn");
             if (likeBtn) {
                 if (d.type === "track") {
-                    likeBtn.style.display = "flex";
-                    likeBtn.textContent = d.liked ? "❤️" : "♡";
+                    likeBtn.style.display = "inline-block";
+                    likeBtn.src = d.liked ? "/spotify/img/like-active.svg" : "/spotify/img/like-not-active.svg";
                 } else {
                     likeBtn.style.display = "none";
                 }
@@ -242,14 +242,20 @@
 
             // like / unlike
             if (likeBtn) {
-                likeBtn.addEventListener("click", () => {
+                likeBtn.addEventListener("click", async () => {
                     if (!currentTrackId) return;
-                    if (likeBtn.textContent === "♡") {
-                        fetch(`/api/like?track=${currentTrackId}`);
-                        likeBtn.textContent = "❤️";
-                    } else {
-                        fetch(`/api/unlike?track=${currentTrackId}`);
-                        likeBtn.textContent = "♡";
+                    
+                    const isLiked = likeBtn.src.includes("like-active.svg");
+                    // TODO: unlike doesnt sync with spotify
+                    try {
+                        if (isLiked) {
+                            await fetch(`/api/unlike?track=${currentTrackId}`);
+                        } else {
+                            await fetch(`/api/like?track=${currentTrackId}`);
+                        }
+                        setTimeout(refreshPlayer, 100);
+                    } catch (e) {
+                        console.error("Like/unlike failed:", e);
                     }
                 });
             }
