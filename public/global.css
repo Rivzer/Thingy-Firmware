@@ -8,5 +8,5 @@ body {
     right: 38px;
     top: 16px;
     object-fit: cover;
-    pointer-events:visible !important;
+    pointer-events:visible;
 }

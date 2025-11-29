@@ -213,6 +213,7 @@
   top: 151px;
   object-fit: cover;
   aspect-ratio: 1;
+  pointer-events: none;
 }
 .playlist {
   position: absolute;
