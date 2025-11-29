@@ -1,6 +1,18 @@
-.background-image {  
+.background-image {
   position: absolute;
-  width:100%;
-  height:100%;
+  width: 100%;
+  height: 100%;
   object-fit: cover;
+  object-position: center;
+
+  animation: slowzoom 40s ease-in-out infinite alternate;
+}
+
+@keyframes slowzoom {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.08);
+  }
 }
