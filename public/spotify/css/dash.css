@@ -8,7 +8,7 @@
   position: relative;
   overflow: hidden;
 }
-.rectangle-25 {
+.nowplaying {
   background: #c4c4c4;
   border-radius: 35px;
   width: 350px;
@@ -16,13 +16,9 @@
   position: absolute;
   left: 429px;
   top: 66px;
-  filter: blur(1.25px);
+  filter: blur(1.25px) grayscale(60%);
 }
-.group-28 {
-  position: absolute;
-  inset: 0;
-}
-.forward-button-1 {
+.forward-button {
   width: 40px;
   height: 40px;
   position: absolute;
@@ -33,12 +29,12 @@
   object-fit: cover;
   aspect-ratio: 1;
 }
-.group-22 {
+.timeline {
   width: 200px;
   height: 10px;
   position: static;
 }
-.rectangle-16 {
+.timeline-whole {
   background: #2e2e2f;
   border-radius: 12px;
   width: 200px;
@@ -47,7 +43,7 @@
   left: 504px;
   top: 362px;
 }
-.rectangle-17 {
+.timeline-current-time {
   background: #ffffff;
   border-radius: 12px;
   width: 85.47px;
@@ -56,7 +52,7 @@
   left: 504px;
   top: 362px;
 }
-._3-23 {
+.song-length {
   color: #ffffff;
   text-align: center;
   font-family: "Poppins-Bold", sans-serif;
@@ -67,7 +63,7 @@
   top: 355px;
   pointer-events: none;
 }
-._1-34 {
+.song-current-time {
   color: #ffffff;
   text-align: center;
   font-family: "Poppins-Bold", sans-serif;
@@ -78,7 +74,7 @@
   top: 355px;
   pointer-events: none;
 }
-.forward-button-2 {
+.reverse-button {
   width: 40px;
   height: 40px;
   position: absolute;
@@ -89,7 +85,7 @@
   object-fit: cover;
   aspect-ratio: 1;
 }
-.pause-1 {
+.pause {
   width: 60px;
   height: 60px;
   position: absolute;
@@ -98,12 +94,8 @@
   object-fit: cover;
   aspect-ratio: 1;
 }
-.group-24 {
-  position: absolute;
-  inset: 0;
-}
 .artist {
-  color: #dfdfdf;
+  color: #ffffff;
   text-align: center;
   font-family: "Poppins-Bold", sans-serif;
   font-size: 24px;
@@ -116,7 +108,7 @@
   pointer-events: none;
 }
 .song-name {
-  color: #dfdfdf;
+  color: #ffffff;
   text-align: center;
   font-family: "Poppins-Bold", sans-serif;
   font-size: 36px;
@@ -128,7 +120,7 @@
   height: 59px;
   pointer-events: none;
 }
-._10-47 {
+.clock {
   color: #ffffff;
   text-align: center;
   font-family: "Poppins-Bold", sans-serif;
@@ -138,7 +130,7 @@
   left: 40px;
   top: 25px;
 }
-.vector {
+.spotify-logo {
   width: 6%;
   height: 48px;
   position: absolute;
@@ -152,7 +144,7 @@
   position: absolute;
   inset: 0;
 }
-.rectangle-21 {
+.recently-played {
   background: #d75805;
   border-radius: 20px;
   width: 153px;
@@ -161,7 +153,7 @@
   left: 236px;
   top: 276px;
 }
-.history-1 {
+.recently-played-icon {
   width: 66px;
   height: 66px;
   position: absolute;
@@ -174,7 +166,7 @@
   position: absolute;
   inset: 0;
 }
-.rectangle-19 {
+.search {
   background: #3a3566;
   border-radius: 20px;
   width: 153px;
@@ -183,7 +175,7 @@
   left: 236px;
   top: 101px;
 }
-.search-1 {
+.search-icon {
   width: 66px;
   height: 66px;
   position: absolute;
@@ -196,7 +188,7 @@
   position: absolute;
   inset: 0;
 }
-.rectangle-18 {
+.likedplaylist {
   background: #337f60;
   border-radius: 20px;
   width: 153px;
@@ -205,7 +197,7 @@
   left: 54px;
   top: 101px;
 }
-.heart-2-1 {
+.likedplaylist-icon {
   width: 66px;
   height: 66px;
   position: absolute;
@@ -219,7 +211,7 @@
   position: absolute;
   inset: 0;
 }
-.rectangle-20 {
+.playlist-list {
   background: #293c67;
   border-radius: 20px;
   width: 153px;
@@ -228,7 +220,7 @@
   left: 54px;
   top: 276px;
 }
-.list-text-1 {
+.playlist-list-icon {
   width: 66px;
   height: 66px;
   position: absolute;
