@@ -5,6 +5,7 @@
     <title>Thingy Spotify Player</title>
     <link rel="stylesheet" href="/spotify/css/nowplaying.css">
     <link rel="stylesheet" href="/global.css">
+    <script src="/js/time-utils.js"></script>
 </head>
 
 <body>
@@ -20,7 +21,7 @@
     <div id="playerSection" style="display:none;">
         <div class="spotify-song-playing">
             <img onclick="history.back()" class="back-button" src="/spotify/img/turn-back.png"></img>
-            <div class="clock">00:00</div>
+            <div class="clock time">00:00</div>
             <img class="spotify-logo" src="/spotify/img/spotify.png" />
 
             <div class="nowplaying">
@@ -310,7 +311,9 @@
 
         checkLoginState();
     </script>
-
+    <script>
+        initLiveClock();
+    </script>
 </body>
 
 </html>

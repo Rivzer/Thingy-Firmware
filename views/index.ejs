@@ -4,6 +4,7 @@
 <head>
     <link rel="stylesheet" href="/index/css/app-dashboard.css">
     <link rel="stylesheet" href="/global.css">
+    <script src="/js/time-utils.js"></script>
 </head>
 <script>
     const tiles = [
@@ -38,54 +39,58 @@
 </script>
 
 <body>
-<div class="app-dashboard">
+    <div class="app-dashboard">
 
-    <div class="clock">00:00</div>
+        <div class="clock time">--:--</div>
 
-    <!-- SETTINGS -->
-    <div class="settings-app" onclick="window.location='/settings'">
-        <div class="settings-app-card"></div>
-        <img class="settings-app-img" src="/index/img/settings.png" />
-        <div class="settings-app-name">Settings</div>
+        <!-- SETTINGS -->
+        <div class="settings-app" onclick="window.location='/settings'">
+            <div class="settings-app-card"></div>
+            <img class="settings-app-img" src="/index/img/settings.png" />
+            <div class="settings-app-name">Settings</div>
+        </div>
+
+        <!-- PICTURE FRAME -->
+        <div class="picture-frame-app" onclick="window.location='/pictureframe'">
+            <div class="picture-frame-app-card"></div>
+            <img class="picture-frame-app-img" src="/index/img/picture_frame.png" />
+            <div class="picture-frame-app-name">Picture Frame</div>
+        </div>
+
+        <!-- CLOCK -->
+        <div class="clock-app" onclick="window.location='/clock'">
+            <div class="clock-app-card"></div>
+            <img class="clock-app-img" src="/index/img/clock.png" />
+            <div class="clock-app-name">Clock</div>
+        </div>
+
+        <!-- WEATHER -->
+        <div class="weather-app" onclick="window.location='/weather'">
+            <div class="weather-app-card"></div>
+            <img class="weather-app-img" src="/index/img/weather.png" />
+            <div class="weather-app-name">Weather</div>
+        </div>
+
+        <!-- SPOTIFY -->
+        <div class="spotify-app" onclick="window.location='/spotify'">
+            <div class="spotify-app-card"></div>
+            <img class="spotify-app-img" src="/index/img/spotify.png" />
+            <div class="spotify-app-name">Spotify</div>
+        </div>
+
+        <!-- CONSOLE DECK -->
+        <div class="tile consoledeck-tile" onclick="window.location='/consoledeck'">
+            <div class="ellipse-26"></div>
+            <img class="imageedit-2-6218725443-1" src="/index/img/console_deck.png" />
+            <div class="console-deck">Console Deck</div>
+        </div>
+
     </div>
-
-    <!-- PICTURE FRAME -->
-    <div class="picture-frame-app" onclick="window.location='/pictureframe'">
-        <div class="picture-frame-app-card"></div>
-        <img class="picture-frame-app-img" src="/index/img/picture_frame.png" />
-        <div class="picture-frame-app-name">Picture Frame</div>
-    </div>
-
-    <!-- CLOCK -->
-    <div class="clock-app" onclick="window.location='/clock'">
-        <div class="clock-app-card"></div>
-        <img class="clock-app-img" src="/index/img/clock.png" />
-        <div class="clock-app-name">Clock</div>
-    </div>
-
-    <!-- WEATHER -->
-    <div class="weather-app" onclick="window.location='/weather'">
-        <div class="weather-app-card"></div>
-        <img class="weather-app-img" src="/index/img/weather.png" />
-        <div class="weather-app-name">Weather</div>
-    </div>
-
-    <!-- SPOTIFY -->
-    <div class="spotify-app" onclick="window.location='/spotify'">
-        <div class="spotify-app-card"></div>
-        <img class="spotify-app-img" src="/index/img/spotify.png" />
-        <div class="spotify-app-name">Spotify</div>
-    </div>
-
-    <!-- CONSOLE DECK -->
-    <div class="tile consoledeck-tile" onclick="window.location='/consoledeck'">
-        <div class="ellipse-26"></div>
-        <img class="imageedit-2-6218725443-1" src="/index/img/console_deck.png" />
-        <div class="console-deck">Console Deck</div>
-    </div>
-
-</div>
 </body>
+
+<script>
+    initLiveClock();
+</script>
 
 
 </html>
