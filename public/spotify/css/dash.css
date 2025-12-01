@@ -120,16 +120,7 @@
   height: 59px;
   pointer-events: none;
 }
-.clock {
-  color: #ffffff;
-  text-align: center;
-  font-family: "Poppins-Bold", sans-serif;
-  font-size: 20px;
-  font-weight: 700;
-  position: absolute;
-  left: 40px;
-  top: 25px;
-}
+
 .spotify-logo {
   width: 6%;
   height: 48px;

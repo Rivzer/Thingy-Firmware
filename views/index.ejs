@@ -2,17 +2,17 @@
 <html lang="en">
 
 <head>
-    <link rel="stylesheet" href="/index/css/style.css">
+    <link rel="stylesheet" href="/index/css/app-dashboard.css">
     <link rel="stylesheet" href="/global.css">
 </head>
 <script>
     const tiles = [
         document.querySelector(".ellipse-26"), // console deck
-        document.querySelector(".ellipse-25"), // spotify
-        document.querySelector(".ellipse-24"), // weather
-        document.querySelector(".ellipse-23"), // clock
-        document.querySelector(".ellipse-22"), // picture frame
-        document.querySelector(".ellipse-2"),  // settings
+        document.querySelector(".spotify-app-card"), // spotify
+        document.querySelector(".weather-app-card"), // weather
+        document.querySelector(".clock-app-card"), // clock
+        document.querySelector(".picture-frame-app-card"), // picture frame
+        document.querySelector(".settings-app-card"),  // settings
     ];
 
     let index = 0;
@@ -38,41 +38,43 @@
 </script>
 
 <body>
-<div class="dashboard-v-5">
+<div class="app-dashboard">
+
+    <div class="clock">00:00</div>
 
     <!-- SETTINGS -->
-    <div class="tile settings-tile" onclick="window.location='/settings'">
-        <div class="ellipse-2"></div>
-        <img class="imageedit-8-2291340055-1" src="/index/img/settings.png" />
-        <div class="settings">Settings</div>
+    <div class="settings-app" onclick="window.location='/settings'">
+        <div class="settings-app-card"></div>
+        <img class="settings-app-img" src="/index/img/settings.png" />
+        <div class="settings-app-name">Settings</div>
     </div>
 
     <!-- PICTURE FRAME -->
-    <div class="tile pictureframe-tile" onclick="window.location='/pictureframe'">
-        <div class="ellipse-22"></div>
-        <img class="imageedit-7-8892221508-1" src="/index/img/picture_frame.png" />
-        <div class="picture-frame">Picture Frame</div>
+    <div class="picture-frame-app" onclick="window.location='/pictureframe'">
+        <div class="picture-frame-app-card"></div>
+        <img class="picture-frame-app-img" src="/index/img/picture_frame.png" />
+        <div class="picture-frame-app-name">Picture Frame</div>
     </div>
 
     <!-- CLOCK -->
-    <div class="tile clock-tile" onclick="window.location='/clock'">
-        <div class="ellipse-23"></div>
-        <img class="imageedit-3-4829322221-1" src="/index/img/clock.png" />
-        <div class="clock">Clock</div>
+    <div class="clock-app" onclick="window.location='/clock'">
+        <div class="clock-app-card"></div>
+        <img class="clock-app-img" src="/index/img/clock.png" />
+        <div class="clock-app-name">Clock</div>
     </div>
 
     <!-- WEATHER -->
-    <div class="tile weather-tile" onclick="window.location='/weather'">
-        <div class="ellipse-24"></div>
-        <img class="imageedit-6-7326754813-1" src="/index/img/weather.png" />
-        <div class="weather">Weather</div>
+    <div class="weather-app" onclick="window.location='/weather'">
+        <div class="weather-app-card"></div>
+        <img class="weather-app-img" src="/index/img/weather.png" />
+        <div class="weather-app-name">Weather</div>
     </div>
 
     <!-- SPOTIFY -->
-    <div class="tile spotify-tile" onclick="window.location='/spotify'">
-        <div class="ellipse-25"></div>
-        <img class="spotify-1-1" src="/index/img/spotify.png" />
-        <div class="spotify">Spotify</div>
+    <div class="spotify-app" onclick="window.location='/spotify'">
+        <div class="spotify-app-card"></div>
+        <img class="spotify-app-img" src="/index/img/spotify.png" />
+        <div class="spotify-app-name">Spotify</div>
     </div>
 
     <!-- CONSOLE DECK -->

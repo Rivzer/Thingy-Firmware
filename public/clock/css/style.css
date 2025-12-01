@@ -1,7 +1,7 @@
-.clock, .clock * {
+.clock-app, .clock-app * {
   box-sizing: border-box;
 }
-.clock {
+.clock-app {
   background: #202125;
   height: 480px;
   position: relative;
