@@ -17,50 +17,45 @@
         <p id="qrUrl" style="font-size:12px; opacity:0.4;"></p>
     </div>
 
-    <!-- PLAYER SECTION -->
     <div id="playerSection" style="display:none;">
         <div class="spotify-song-playing">
-            <!-- times -->
-            <div id="totalTime" class="_3-23">0:00</div>
-            <div id="currentTime" class="_1-34">0:00</div>
+            <img onclick="history.back()" class="back-button" src="/spotify/img/turn-back.png"></img>
+            <div class="clock">00:00</div>
+            <img class="spotify-logo" src="/spotify/img/spotify.png" />
 
-            <!-- progress bar background + fill -->
-            <div class="rectangle-16"></div>
-            <div class="rectangle-17" id="progressFill"></div>
-            <input id="timeline" type="range" min="0" max="100" value="0" class="timeline-input">
-
-            <!-- transport controls -->
-            <img id="prevBtn" class="forward-button-2" src="/spotify/img/forward-button.png" />
-            <img id="playBtn" class="play-1-1" src="/spotify/img/play.png" data-play="/spotify/img/play.png"
-                data-pause="/spotify/img/pause.png" />
-            <img id="nextBtn" class="forward-button-1" src="/spotify/img/forward-button.png" />
-
-            <!-- album cover -->
-            <div class="rectangle-15">
+            <div class="nowplaying">
                 <img id="cover" class="album-cover" src="" alt="Album cover" />
             </div>
 
-            <!-- optional small text -->
-            <div class="_10-47">10:47</div>
+            <div class="cotrols">
+                <img id="prevBtn" class="reverse-button" src="/spotify/img/forward-button.png" />
+                <img id="playBtn" class="pause" src="/spotify/img/play.png" data-play="/spotify/img/play.png"
+                    data-pause="/spotify/img/pause.png" />
+                <img id="nextBtn" class="forward-button" src="/spotify/img/forward-button.png" />
+            </div>
 
-            <!-- spotify logo -->
-            <img class="vector" src="/spotify/img/spotify.png" />
+            <img id="likeBtn" src="" class="like-button" />
 
-            <!-- back button to dashboard -->
-            <img onclick="history.back()" class="back-button" src="/spotify/img/turn-back.png"></img>
+            <div class="song-info">
+                <div id="artist" class="artist">Artist</div>
+                <div id="track" class="song-name">Track title</div>
+            </div>
 
-            <!-- liked indicator (heart) -->
-            <img id="likeBtn" src="" class="ellipse-3" />
+            <div class="timeline">
+                <div class="timeline-whole"></div>
+                <div class="timeline-current-time" id="timeline-current-time"></div>
+                <div id="totalTime" class="song-length">0:00</div>
+                <div id="currentTime" class="song-current-time">0:00</div>
+                <input id="timeline" type="range" min="0" max="100" value="0" class="timeline-input">
+            </div>
 
-            <!-- artist + track -->
-            <div id="artist" class="tracy-chapman">Artist</div>
-            <div id="track" class="fast-car">Track title</div>
-
-            <!-- volume bar -->
-            <div class="rectangle-52"></div>
-            <div class="rectangle-53" id="volumeFill"></div>
-            <div class="ellipse-3" id="volumeKnob"></div>
-            <input id="volumeSlider" type="range" min="0" max="100" value="50" class="volume-slider">
+            <div class="volume">
+                <div class="volume-track"></div>
+                <div class="volume-fill" id="volumeFill"></div>
+                <div class="volume-knob" id="volumeKnob"></div>
+                <input id="volumeSlider" type="range" min="0" max="100" value="50" class="volume-slider">
+            </div>
+            
         </div>
     </div>
 
@@ -128,7 +123,7 @@
             }
 
             const timeline = document.getElementById("timeline");
-            const progressFill = document.getElementById("progressFill");
+            const timelineFill = document.getElementById("timeline-current-time");
 
             trackDuration = d.duration || 0;
             lastProgress = d.progress || 0;
@@ -144,13 +139,13 @@
             document.getElementById("totalTime").innerText = msToTime(trackDuration);
 
             // update white fill bar
-            if (progressFill) {
+            if (timelineFill) {
                 if (trackDuration > 0) {
                     const fraction = lastProgress / trackDuration;
-                    const fullWidth = 688; // same as rectangle-16
-                    progressFill.style.width = `${fullWidth * fraction}px`;
+                    const fullWidth = 688; // same as timeline-whole
+                    timelineFill.style.width = `${fullWidth * fraction}px`;
                 } else {
-                    progressFill.style.width = "0px";
+                    timelineFill.style.width = "0px";
                 }
             }
 
@@ -173,7 +168,7 @@
 
         function smoothUpdate() {
             const timeline = document.getElementById("timeline");
-            const progressFill = document.getElementById("progressFill");
+            const timelineFill = document.getElementById("timeline-current-time");
             if (!timeline || !trackDuration) return;
 
             let current = lastProgress;
@@ -187,10 +182,10 @@
             timeline.value = current;
             document.getElementById("currentTime").innerText = msToTime(current);
 
-            if (progressFill && trackDuration > 0) {
+            if (timelineFill && trackDuration > 0) {
                 const fraction = current / trackDuration;
                 const fullWidth = 688;
-                progressFill.style.width = `${fullWidth * fraction}px`;
+                timelineFill.style.width = `${fullWidth * fraction}px`;
             }
         }
 
@@ -204,8 +199,8 @@
             const v = Math.min(100, Math.max(0, volumePercent));
             slider.value = v;
 
-            const trackHeight = 262;   // rectangle-52 height
-            const trackTop = 77;       // rectangle-52 top
+            const trackHeight = 262;   // volume-track height
+            const trackTop = 77;       // volume-track top
 
             // Volume 0 = bottom, 100 = top
             const fillHeight = (v / 100) * trackHeight;
@@ -234,11 +229,11 @@
                     lastProgress = Number(this.value);
                     lastTimestamp = Date.now();
 
-                    const progressFill = document.getElementById("progressFill");
-                    if (progressFill && trackDuration > 0) {
+                    const timelineFill = document.getElementById("timeline-current-time");
+                    if (timelineFill && trackDuration > 0) {
                         const fraction = lastProgress / trackDuration;
                         const fullWidth = 688;
-                        progressFill.style.width = `${fullWidth * fraction}px`;
+                        timelineFill.style.width = `${fullWidth * fraction}px`;
                     }
                 });
             }

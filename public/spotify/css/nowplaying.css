@@ -8,7 +8,7 @@
   position: relative;
   overflow: hidden;
 }
-._3-23 {
+.song-length {
   color: #ffffff;
   text-align: center;
   font-family: "Poppins-Bold", sans-serif;
@@ -17,8 +17,9 @@
   position: absolute;
   left: 728px;
   top: 450px;
+  pointer-events: none;
 }
-._1-34 {
+.song-current-time {
   color: #ffffff;
   text-align: center;
   font-family: "Poppins-Bold", sans-serif;
@@ -27,12 +28,9 @@
   position: absolute;
   left: 40px;
   top: 450px;
+  pointer-events: none;
 }
-.group-22 {
-  position: absolute;
-  inset: 0;
-}
-.rectangle-16 {
+.timeline-whole {
   background: #2e2e2f;
   border-radius: 12px;
   width: 688px;
@@ -41,7 +39,7 @@
   left: 56px;
   top: 438px;
 }
-.rectangle-17 {
+.timeline-current-time {
   background: #ffffff;
   border-radius: 12px;
   width: 294px;
@@ -50,7 +48,7 @@
   left: 56px;
   top: 438px;
 }
-.forward-button-1 {
+.forward-button {
   width: 40px;
   height: 40px;
   position: absolute;
@@ -61,7 +59,7 @@
   object-fit: cover;
   aspect-ratio: 1;
 }
-.vector {
+.spotify-logo {
   width: 5%;
   height: 40px;
   position: absolute;
@@ -71,7 +69,7 @@
   overflow: visible;
   aspect-ratio: 1;
 }
-.forward-button-2 {
+.reverse-button {
   width: 40px;
   height: 40px;
   position: absolute;
@@ -82,7 +80,7 @@
   object-fit: cover;
   aspect-ratio: 1;
 }
-.play-1-1 {
+.pause {
   width: 60px;
   height: 60px;
   position: absolute;
@@ -91,8 +89,7 @@
   object-fit: cover;
   aspect-ratio: 1;
 }
-.rectangle-15 {
-  /* TODO: dont show background when cover found */
+.nowplaying {
   background: #c4c4c4;       /* fallback if there is no cover */
   border-radius: 18px;
   width: 260px;
@@ -103,7 +100,6 @@
   overflow: hidden;
 }
 
-/* Album cover image fills the entire card */
 .album-cover {
   width: 100%;
   height: 100%;
@@ -111,7 +107,7 @@
   display: block;
 }
 
-._10-47 {
+.clock {
   color: #ffffff;
   text-align: center;
   font-family: "Poppins-Bold", sans-serif;
@@ -121,7 +117,7 @@
   left: 40px;
   top: 25px;
 }
-.vector2 {
+.spotify-logo {
   width: 6%;
   height: 48px;
   position: absolute;
@@ -131,11 +127,7 @@
   overflow: visible;
   aspect-ratio: 1;
 }
-.group-23 {
-  position: absolute;
-  inset: 0;
-}
-.tracy-chapman {
+.artist {
   color: #dfdfdf;
   text-align: center;
   font-family: "Poppins-Bold", sans-serif;
@@ -146,8 +138,9 @@
   top: 200px;
   width: 218px;
   height: 40px;
+  pointer-events: none;
 }
-.fast-car {
+.song-name {
   color: #dfdfdf;
   text-align: center;
   font-family: "Poppins-Bold", sans-serif;
@@ -158,12 +151,9 @@
   top: 102px;
   width: 268px;
   height: 59px;
+  pointer-events: none;
 }
-.group-40 {
-  position: absolute;
-  inset: 0;
-}
-.rectangle-52 {
+.volume-track {
   background: #000000;
   border-radius: 15px;
   width: 19px;
@@ -172,7 +162,7 @@
   left: 734px;
   top: 77px;
 }
-.rectangle-53 {
+.volume-fill {
   background: #1abc54;
   border-radius: 15px;
   width: 19px;
@@ -181,7 +171,7 @@
   left: 734px;
   top: 149px;
 }
-.ellipse-3 {
+.like-button {
   background: transparent;
   width: 30px;
   height: 30px;
@@ -190,7 +180,6 @@
   top: 357px;
 }
 
-/* Slider above the existing bar (rectangle-16/17) */
 .timeline-input {
   position: absolute;
   left: 54px;   
@@ -202,7 +191,6 @@
   opacity: 0;
 }
 
-/* No default line */
 .timeline-input::-webkit-slider-runnable-track {
   height: 10px;
   background: transparent;
@@ -212,7 +200,6 @@
   background: transparent;
 }
 
-/* Thumb small and transparent (you basically only see your own bar) */
 .timeline-input::-webkit-slider-thumb {
   -webkit-appearance: none;
   width: 0;
@@ -224,8 +211,7 @@
   height: 10px;
   background: transparent;
 }
-/* Existing track (background) */
-.rectangle-52 {
+.volume-track {
   background: #000000;
   border-radius: 15px;
   width: 19px;
@@ -235,18 +221,16 @@
   top: 77px;
 }
 
-/* Fill (this height will be controlled by JS) */
 #volumeFill {
   background: #1abc54;
   border-radius: 15px;
   width: 19px;
-  height: 190px;         /* will be overridden by JS */
+  height: 190px;         
   position: absolute;
   left: 734px;
-  top: 149px;            /* will be overridden by JS */
+  top: 149px;            
 }
 
-/* Knob (we move this up/down in JS) */
 #volumeKnob {
   background: #d9d9d9;
   border-radius: 50%;
@@ -254,7 +238,7 @@
   height: 30px;
   position: absolute;
   left: 729px;
-  top: 142px;            /* will be overridden by JS */
+  top: 142px;            
   display: flex;
   align-items: center;
   justify-content: center;
@@ -262,7 +246,6 @@
   color: #1abc54;
 }
 
-/* Invisible vertical slider on top of the bar */
 .volume-slider {
   position: absolute;
   left: 734px;
@@ -272,9 +255,9 @@
   background: transparent;
   -webkit-appearance: none;
   appearance: none;
-  writing-mode: bt-lr;    /* some browsers, may be ignored */
-  transform: scaleY(-1);  /* invert so 0 is bottom, 100 top */
-  opacity: 0;             /* fully invisible but still interactive */
+  writing-mode: bt-lr;    
+  transform: scaleY(-1); 
+  opacity: 0;             
 }
 
 .volume-slider::-webkit-slider-runnable-track {
@@ -293,14 +276,4 @@
   width: 0;
   height: 0;
   background: transparent;
-}
-.vector {
-  width: 6%;
-  height: 48px;
-  position: absolute;
-  right: 47%;
-  left: 47%;
-  top: calc(50% - 224px);
-  overflow: visible;
-  aspect-ratio: 1;
 }
