@@ -38,10 +38,6 @@
   left: 136px;
   top: 412px;
 }
-.group-20 {
-  position: absolute;
-  inset: 0;
-}
 .settings-app-card {
   background: #48494d;
   border-radius: 50%;
@@ -60,10 +56,6 @@
   object-fit: cover;
   aspect-ratio: 1;
 }
-.group-19 {
-  position: absolute;
-  inset: 0;
-}
 .picture-frame-app-card {
   background: #816a2d;
   border-radius: 50%;
@@ -81,10 +73,6 @@
   top: 292px;
   object-fit: cover;
   aspect-ratio: 1;
-}
-.group-21 {
-  position: absolute;
-  inset: 0;
 }
 .clock-app-card {
   background: #774443;
@@ -124,7 +112,7 @@
   left: 363px;
   top: 210px;
 }
-.console-deck {
+.console-deck-app-name {
   color: #9fa2a7;
   text-align: center;
   font-family: "Poppins-Bold", sans-serif;
@@ -133,10 +121,6 @@
   position: absolute;
   left: 95px;
   top: 210px;
-}
-.group-17 {
-  position: absolute;
-  inset: 0;
 }
 .weather-app-card {
   background: #376467;
@@ -156,10 +140,6 @@
   object-fit: cover;
   aspect-ratio: 1;
 }
-.group-16 {
-  position: absolute;
-  inset: 0;
-}
 .spotify-app-card {
   background: #3f624a;
   border-radius: 50%;
@@ -178,11 +158,7 @@
   object-fit: cover;
   aspect-ratio: 1;
 }
-.group-18 {
-  position: absolute;
-  inset: 0;
-}
-.ellipse-26 {
+.console-deck-app-card {
   background: #63447f;
   border-radius: 50%;
   width: 142px;
@@ -191,7 +167,7 @@
   left: 95px;
   top: 59px;
 }
-.imageedit-2-6218725443-1 {
+.console-deck-app-img {
   width: 80px;
   height: 80px;
   position: absolute;
@@ -219,7 +195,7 @@
 .clock-app-card,
 .weather-app-card,
 .spotify-app-card,
-.ellipse-26 {
+.console-deck-app-card {
   transition: transform 0.18s ease, box-shadow 0.18s ease;
   cursor: pointer;
 }
@@ -230,7 +206,7 @@
 .clock-app-img,
 .weather-app-img,
 .spotify-app-img,
-.imageedit-2-6218725443-1 {
+.console-deck-app-img {
   transition: transform 0.18s ease;
   pointer-events: none; /* so hover is captured by the circle */
 }
@@ -241,13 +217,13 @@
 .clock-app-card:hover,
 .weather-app-card:hover,
 .spotify-app-card:hover,
-.ellipse-26:hover,
+.console-deck-app-card:hover,
 .settings-app-card.is-focused,
 .picture-frame-app-card.is-focused,
 .clock-app-card.is-focused,
 .weather-app-card.is-focused,
 .spotify-app-card.is-focused,
-.ellipse-26.is-focused {
+.console-deck-app-card.is-focused {
   transform: scale(1.06);
   box-shadow: 0 0 18px rgba(0, 0, 0, 0.6);
 }
@@ -278,7 +254,7 @@
   transform: scale(1.08);
 }
 
-.ellipse-26:hover ~ .imageedit-2-6218725443-1,
-.ellipse-26.is-focused ~ .imageedit-2-6218725443-1 {
+.console-deck-app-card:hover ~ .console-deck-app-img,
+.console-deck-app-card.is-focused ~ .console-deck-app-img {
   transform: scale(1.08);
 }

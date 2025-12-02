@@ -8,7 +8,7 @@
 </head>
 <script>
     const tiles = [
-        document.querySelector(".ellipse-26"), // console deck
+        document.querySelector(".console-deck-app-card"), // console deck
         document.querySelector(".spotify-app-card"), // spotify
         document.querySelector(".weather-app-card"), // weather
         document.querySelector(".clock-app-card"), // clock
@@ -41,7 +41,7 @@
 <body>
     <div class="app-dashboard">
 
-        <div class="clock time">--:--</div>
+        <div class="clock time">00:00</div>
 
         <!-- SETTINGS -->
         <div class="settings-app" onclick="window.location='/settings'">
@@ -79,10 +79,10 @@
         </div>
 
         <!-- CONSOLE DECK -->
-        <div class="tile consoledeck-tile" onclick="window.location='/consoledeck'">
-            <div class="ellipse-26"></div>
-            <img class="imageedit-2-6218725443-1" src="/index/img/console_deck.png" />
-            <div class="console-deck">Console Deck</div>
+        <div class="console-deck-app" onclick="window.location='/consoledeck'">
+            <div class="console-deck-app-card"></div>
+            <img class="console-deck-app-img" src="/index/img/console_deck.png" />
+            <div class="console-deck-app-name">Console Deck</div>
         </div>
 
     </div>
