@@ -14,25 +14,26 @@
     }
 
     .tile {
-        background: #424242;
-        border-radius: 15px;
         width: 125px;
         height: 125px;
+        border-radius: 15px;
         position: absolute;
-        aspect-ratio: 1;
         overflow: hidden;
         cursor: pointer;
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
     }
+
 
     .tile-inner {
         position: absolute;
         inset: 0;
         display: flex;
         flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        padding: 8px;
-        text-align: center;
+        justify-content: flex-end;
+        padding: 5px;
+        background: linear-gradient(transparent, rgba(0, 0, 0, 0.6));
     }
 
     .tile img {
@@ -43,13 +44,15 @@
     }
 
     .tile-name {
-        font-size: 0.8rem;
-        font-weight: 600;
+        font-size: 0.75rem;
+        font-weight: bold;
+        text-shadow: 0 1px 2px black;
     }
 
     .tile-sub {
-        font-size: 0.65rem;
-        color: #d0d0d0;
+        font-size: 0.6rem;
+        color: #ddd;
+        text-shadow: 0 1px 2px black;
     }
 
     .tile.selected {
@@ -66,63 +69,61 @@
     }
 </style>
 
-<%
-    const slots = [
-        { cls: "rectangle-37", left: 50,  top: 27  },
-        { cls: "rectangle-38", left: 50,  top: 177 },
-        { cls: "rectangle-43", left: 50,  top: 327 },
-        { cls: "rectangle-39", left: 223, top: 27  },
-        { cls: "rectangle-41", left: 223, top: 177 },
-        { cls: "rectangle-42", left: 223, top: 327 },
-        { cls: "rectangle-44", left: 396, top: 27  },
-        { cls: "rectangle-45", left: 396, top: 177 },
-        { cls: "rectangle-46", left: 396, top: 327 },
-        { cls: "rectangle-50", left: 569, top: 27  },
-        { cls: "rectangle-48", left: 569, top: 177 },
-        { cls: "rectangle-49", left: 569, top: 327 }
-    ];
+<% const slots=[ { cls: "rectangle-37" , left: 50, top: 27 }, { cls: "rectangle-38" , left: 50, top: 177 }, {
+    cls: "rectangle-43" , left: 50, top: 327 }, { cls: "rectangle-39" , left: 223, top: 27 }, { cls: "rectangle-41" ,
+    left: 223, top: 177 }, { cls: "rectangle-42" , left: 223, top: 327 }, { cls: "rectangle-44" , left: 396, top: 27 },
+    { cls: "rectangle-45" , left: 396, top: 177 }, { cls: "rectangle-46" , left: 396, top: 327 }, { cls: "rectangle-50"
+    , left: 569, top: 27 }, { cls: "rectangle-48" , left: 569, top: 177 }, { cls: "rectangle-49" , left: 569, top: 327 }
+    ]; const list=Array.isArray(apps) ? apps.slice(0, 12) : []; %>
 
-    const list = Array.isArray(apps) ? apps.slice(0, 12) : [];
-%>
+    <div class="console-deck-console" id="consoleDeck">
 
-<div class="console-deck-console" id="consoleDeck">
+        <% list.forEach((app, index)=> {
+            const slot = slots[index];
+            const showLabel = (app.showLabel !== false); // default = aan
+            %>
+            <div class="tile <%= selectedAppId === app.id ? 'selected' : '' %>" style="
+            left:<%= slot.left %>px;
+            top:<%= slot.top %>px;
+            background-image:url('<%= app.icon %>');
+         " data-app-id="<%= app.id %>">
 
-    <% list.forEach((app, index) => { 
-        const slot = slots[index];
-    %>
-        <div class="tile <%= selectedAppId === app.id ? 'selected' : '' %>"
-             style="left:<%= slot.left %>px; top:<%= slot.top %>px;"
-             data-app-id="<%= app.id %>">
+                <% if (showLabel) { %>
+                    <div class="tile-inner">
+                        <div class="tile-name">
+                            <%= app.name %>
+                        </div>
+                        <div class="tile-sub">
+                            <%= app.category || '' %>
+                        </div>
+                    </div>
+                    <% } %>
 
-            <div class="tile-inner">
-                <img src="/spotify/img/turn-back.png" alt="">
-                <div class="tile-name"><%= app.name %></div>
-                <div class="tile-sub"><%= app.category || app.pcCommand %></div>
             </div>
-        </div>
-    <% }) %>
+            <% }) %>
 
-    <!-- Back button -->
-    <img class="turn-back" src="/spotify/img/turn-back.png" onclick="history.back()">
-</div>
 
-<script>
-    const deck = document.getElementById('consoleDeck');
+                <!-- Back button -->
+                <img class="turn-back" src="/spotify/img/turn-back.png" onclick="history.back()">
+    </div>
 
-    deck.addEventListener('click', (e) => {
-        const tile = e.target.closest('.tile');
-        if (!tile) return;
+    <script>
+        const deck = document.getElementById('consoleDeck');
 
-        const appId = tile.dataset.appId;
-        if (!appId) return;
+        deck.addEventListener('click', (e) => {
+            const tile = e.target.closest('.tile');
+            if (!tile) return;
 
-        console.log("Clicked app:", appId);
+            const appId = tile.dataset.appId;
+            if (!appId) return;
 
-        // Select visual
-        document.querySelectorAll('.tile').forEach(t => t.classList.remove('selected'));
-        tile.classList.add('selected');
+            console.log("Clicked app:", appId);
 
-        // (later) open/select API call
-        // fetch('/api/consoledeck/select', { ... })
-    });
-</script>
+            // Select visual
+            document.querySelectorAll('.tile').forEach(t => t.classList.remove('selected'));
+            tile.classList.add('selected');
+
+            // (later) open/select API call
+            // fetch('/api/consoledeck/select', { ... })
+        });
+    </script>

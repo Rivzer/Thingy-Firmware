@@ -1,13 +1,50 @@
 {
   "apps": [
     {
-      "id": "app_1764888785427",
-      "name": "OBS",
-      "pcCommand": "obs",
-      "icon": "https://images-eds-ssl.xboxlive.com/image?url=4rt9.lXDC4H_93laV1_eHHFT949fUipzkiFOBH3fAiZZUCdYojwUyX2aTonS1aIwMrx6NUIsHfUHSLzjGJFxxrAWesIFQqd_JTUGW7KWQr7gVGk5Uvj7NiexhuSQMilvh0o6jqB6wJ8f5XKag.dFyVWfFeJx4CZGXGXmGgz9ieg-&format=source",
+      "id": "app_1764889602016",
+      "name": "1",
+      "pcCommand": "1",
+      "icon": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/OBS_Studio_Logo.svg/2048px-OBS_Studio_Logo.svg.png",
       "color": "",
-      "category": ""
+      "category": "",
+      "showLabel": false
+    },
+    {
+      "id": "app_1764889605400",
+      "name": "2",
+      "pcCommand": "2",
+      "icon": "",
+      "color": "",
+      "category": "",
+      "showLabel": true
+    },
+    {
+      "id": "app_1764889613458",
+      "name": "3",
+      "pcCommand": "3",
+      "icon": "",
+      "color": "",
+      "category": "",
+      "showLabel": false
+    },
+    {
+      "id": "app_1764889619647",
+      "name": "4",
+      "pcCommand": "4",
+      "icon": "",
+      "color": "",
+      "category": "",
+      "showLabel": false
+    },
+    {
+      "id": "app_1764889622627",
+      "name": "5",
+      "pcCommand": "5",
+      "icon": "",
+      "color": "",
+      "category": "",
+      "showLabel": true
     }
   ],
-  "selectedAppId": null
+  "selectedAppId": "app_1764889605400"
 }

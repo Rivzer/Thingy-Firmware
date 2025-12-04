@@ -13,7 +13,8 @@
             padding: 20px;
         }
 
-        h1, h2 {
+        h1,
+        h2 {
             margin: 0 0 10px;
         }
 
@@ -131,53 +132,62 @@
 <body>
     <h1>Thingy Admin – Console Deck</h1>
     <div class="meta">
-        Device IP: <strong><%= ip %></strong> • UI port: <strong><%= port %></strong> •
-        WiFi configured: <strong><%= wifiConfigured ? "yes" : "no" %></strong>
+        Device IP: <strong>
+            <%= ip %>
+        </strong> • UI port: <strong>
+            <%= port %>
+        </strong> •
+        WiFi configured: <strong>
+            <%= wifiConfigured ? "yes" : "no" %>
+        </strong>
     </div>
 
     <div class="row section">
         <div class="card card-half">
             <h2>Nieuwe app toevoegen</h2>
             <form id="addForm">
-                <label for="name">Naam</label>
-                <input type="text" id="name" name="name" placeholder="Bijv. Spotify" required>
+                <input type="text" name="name" placeholder="Naam" required>
+                <input type="text" name="pcCommand" placeholder="PC command" required>
+                <input type="text" name="icon" placeholder="Icon URL (optional)">
+                <input type="text" name="color" placeholder="#RRGGBB (optional)">
+                <input type="text" name="category" placeholder="Categorie (optional)">
 
-                <label for="pcCommand">PC command (later voor HID / shortcuts)</label>
-                <input type="text" id="pcCommand" name="pcCommand" placeholder="Bijv. spotify.exe of steam://rungameid/..." required>
-
-                <label for="icon">Icon key (optioneel)</label>
-                <input type="text" id="icon" name="icon" placeholder="Bijv. spotify, steam, obs">
-
-                <label for="color">Kleur (optioneel, #RRGGBB)</label>
-                <input type="text" id="color" name="color" placeholder="#1DB954">
-
-                <label for="category">Categorie (optioneel)</label>
-                <input type="text" id="category" name="category" placeholder="Bijv. games, music, tools">
+                <label style="display:block; margin-top:4px; font-size:0.85rem;">
+                    <input type="checkbox" id="showLabel" name="showLabel" checked>
+                    Tekst overlay tonen op tile
+                </label>
 
                 <button type="submit">Toevoegen</button>
             </form>
+
         </div>
 
         <div class="card card-half">
             <h2>Geselecteerde app</h2>
-            <% if (config.selectedAppId) { 
-                const current = config.apps.find(a => a.id === config.selectedAppId);
-            %>
+            <% if (config.selectedAppId) { const current=config.apps.find(a=> a.id === config.selectedAppId);
+                %>
                 <% if (current) { %>
-                    <p><strong><%= current.name %></strong></p>
-                    <p><small><%= current.pcCommand %></small></p>
+                    <p><strong>
+                            <%= current.name %>
+                        </strong></p>
+                    <p><small>
+                            <%= current.pcCommand %>
+                        </small></p>
                     <% if (current.category) { %>
-                        <span class="pill"><%= current.category %></span>
-                    <% } %>
-                    <% if (current.color) { %>
-                        <span class="pill">kleur: <%= current.color %></span>
-                    <% } %>
-                <% } else { %>
-                    <p class="empty-hint">De geselecteerde app bestaat niet meer.</p>
-                <% } %>
-            <% } else { %>
-                <p class="empty-hint">Nog geen app geselecteerd. Klik op "Selecteren" bij een app hieronder.</p>
-            <% } %>
+                        <span class="pill">
+                            <%= current.category %>
+                        </span>
+                        <% } %>
+                            <% if (current.color) { %>
+                                <span class="pill">kleur: <%= current.color %></span>
+                                <% } %>
+                                    <% } else { %>
+                                        <p class="empty-hint">De geselecteerde app bestaat niet meer.</p>
+                                        <% } %>
+                                            <% } else { %>
+                                                <p class="empty-hint">Nog geen app geselecteerd. Klik op "Selecteren"
+                                                    bij een app hieronder.</p>
+                                                <% } %>
         </div>
     </div>
 
@@ -185,29 +195,32 @@
         <h2>Bestaande apps</h2>
 
         <div id="apps">
-            <% if (config.apps.length === 0) { %>
-                <p class="empty-hint">Nog geen apps toegevoegd. Voeg er eentje toe hierboven.</p>
-            <% } %>
+            <% config.apps.forEach(app=> { %>
+                <div class="app-row <%= config.selectedAppId === app.id ? 'selected' : '' %>" data-id="<%= app.id %>"
+                    data-name="<%- app.name %>" data-pc-command="<%- app.pcCommand %>" data-icon="<%- app.icon || '' %>"
+                    data-color="<%- app.color || '' %>" data-category="<%- app.category || '' %>"
+                    data-show-label="<%= app.showLabel === false ? 'false' : 'true' %>">
 
-            <% config.apps.forEach(app => { %>
-                <div class="app-row <%= config.selectedAppId === app.id ? 'selected' : '' %>" data-id="<%= app.id %>">
-                    <div class="app-info">
-                        <strong><%= app.name %></strong><br>
-                        <small><%= app.pcCommand %></small><br>
-                        <% if (app.category) { %>
-                            <span class="pill"><%= app.category %></span>
-                        <% } %>
-                        <% if (app.color) { %>
-                            <span class="pill">kleur: <%= app.color %></span>
-                        <% } %>
+                    <div>
+                        <strong>
+                            <%= app.name %>
+                        </strong><br>
+                        <small>
+                            <%= app.pcCommand %>
+                        </small><br>
+                        <small>
+                            <%= app.category || '' %>
+                        </small><br>
+                        <small>Overlay: <%= app.showLabel===false ? 'uit' : 'aan' %></small>
                     </div>
-                    <div class="app-actions">
-                        <button class="select-btn secondary">Selecteren</button>
-                        <button class="delete-btn danger">Verwijderen</button>
-                    </div>
+
+                    <button class="select-btn">Selecteren</button>
+                    <button class="edit-btn">Bewerken</button>
+                    <button class="delete-btn">Verwijderen</button>
                 </div>
-            <% }) %>
+                <% }) %>
         </div>
+
     </div>
 
     <script>
@@ -218,40 +231,85 @@
             e.preventDefault();
             const formData = new FormData(addForm);
             const body = Object.fromEntries(formData.entries());
+            body.showLabel = document.getElementById('showLabel').checked;
+
+            let url;
+            let method;
+
+            if (editingAppId) {
+                // BEWERKEN
+                url = '/api/consoledeck/apps/' + encodeURIComponent(editingAppId);
+                method = 'PUT';
+            } else {
+                // NIEUWE APP
+                url = '/api/consoledeck/apps';
+                method = 'POST';
+            }
 
             try {
-                const res = await fetch('/api/consoledeck/apps', {
-                    method: 'POST',
+                const res = await fetch(url, {
+                    method,
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(body)
                 });
                 const app = await res.json();
 
                 if (!res.ok) {
-                    alert('Fout bij toevoegen: ' + (app.error || 'unknown'));
+                    alert('Fout: ' + (app.error || 'unknown'));
                     return;
                 }
 
-                const row = document.createElement('div');
-                row.className = 'app-row';
-                row.dataset.id = app.id;
-                row.innerHTML = `
-                    <div class="app-info">
-                        <strong>${app.name}</strong><br>
-                        <small>${app.pcCommand}</small><br>
-                        ${app.category ? `<span class="pill">${app.category}</span>` : ''}
-                        ${app.color ? `<span class="pill">kleur: ${app.color}</span>` : ''}
-                    </div>
-                    <div class="app-actions">
-                        <button class="select-btn secondary">Selecteren</button>
-                        <button class="delete-btn danger">Verwijderen</button>
-                    </div>
-                `;
-                appsContainer.appendChild(row);
+                if (editingAppId) {
+                    // UI updaten voor bestaande row
+                    const row = appsContainer.querySelector(`.app-row[data-id="${editingAppId}"]`);
+                    if (row) {
+                        row.dataset.name = app.name;
+                        row.dataset.pcCommand = app.pcCommand;
+                        row.dataset.icon = app.icon || '';
+                        row.dataset.color = app.color || '';
+                        row.dataset.category = app.category || '';
+                        row.dataset.showLabel = app.showLabel === false ? 'false' : 'true';
+
+                        row.querySelector('strong').textContent = app.name;
+                        const smalls = row.querySelectorAll('small');
+                        if (smalls[0]) smalls[0].textContent = app.pcCommand;
+                        if (smalls[1]) smalls[1].textContent = app.category || '';
+                        if (smalls[2]) smalls[2].textContent = 'Overlay: ' + (app.showLabel === false ? 'uit' : 'aan');
+                    }
+                } else {
+                    // Nieuwe row toevoegen
+                    const row = document.createElement('div');
+                    row.className = 'app-row';
+                    row.dataset.id = app.id;
+                    row.dataset.name = app.name;
+                    row.dataset.pcCommand = app.pcCommand;
+                    row.dataset.icon = app.icon || '';
+                    row.dataset.color = app.color || '';
+                    row.dataset.category = app.category || '';
+                    row.dataset.showLabel = app.showLabel === false ? 'false' : 'true';
+
+                    row.innerHTML = `
+                <div>
+                    <strong>${app.name}</strong><br>
+                    <small>${app.pcCommand}</small><br>
+                    <small>${app.category || ''}</small><br>
+                    <small>Overlay: ${app.showLabel === false ? 'uit' : 'aan'}</small>
+                </div>
+                <button class="select-btn">Selecteren</button>
+                <button class="edit-btn">Bewerken</button>
+                <button class="delete-btn">Verwijderen</button>
+            `;
+                    appsContainer.appendChild(row);
+                }
+
+                // Form reset
                 addForm.reset();
+                document.getElementById('showLabel').checked = true;
+                editingAppId = null;
+                addForm.querySelector('button[type="submit"]').textContent = 'Toevoegen';
             } catch (err) {
                 console.error(err);
-                alert('Onbekende fout bij toevoegen');
+                alert('Onbekende fout');
             }
         });
 
@@ -260,7 +318,7 @@
             if (!row) return;
             const id = row.dataset.id;
 
-            // Select
+            // SELECT
             if (e.target.classList.contains('select-btn')) {
                 try {
                     const res = await fetch('/api/consoledeck/select', {
@@ -274,19 +332,30 @@
                         return;
                     }
 
-                    // UI highlight
                     document.querySelectorAll('.app-row').forEach(r => r.classList.remove('selected'));
                     row.classList.add('selected');
-
-                    // Optional: reload page to update "Geselecteerde app" kaart
-                    location.reload();
                 } catch (err) {
                     console.error(err);
                     alert('Onbekende fout bij selecteren');
                 }
             }
 
-            // Delete
+            // EDIT
+            if (e.target.classList.contains('edit-btn')) {
+                editingAppId = id;
+
+                // form velden vullen vanuit data attrs
+                addForm.name.value = row.dataset.name || '';
+                addForm.pcCommand.value = row.dataset.pcCommand || '';
+                addForm.icon.value = row.dataset.icon || '';
+                addForm.color.value = row.dataset.color || '';
+                addForm.category.value = row.dataset.category || '';
+                document.getElementById('showLabel').checked = (row.dataset.showLabel !== 'false');
+
+                addForm.querySelector('button[type="submit"]').textContent = 'Opslaan';
+            }
+
+            // DELETE
             if (e.target.classList.contains('delete-btn')) {
                 if (!confirm('Deze app verwijderen?')) return;
                 try {
@@ -299,8 +368,6 @@
                         return;
                     }
                     row.remove();
-                    // Als de geselecteerde app verwijderd is, is het netjes om even te reloaden
-                    location.reload();
                 } catch (err) {
                     console.error(err);
                     alert('Onbekende fout bij verwijderen');

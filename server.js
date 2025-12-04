@@ -976,7 +976,7 @@ adminApp.get("/api/consoledeck/selected", (req, res) => {
 
 // Nieuwe app toevoegen (gebruik je in admin-dashboard.ejs)
 adminApp.post("/api/consoledeck/apps", (req, res) => {
-    const { name, pcCommand, icon, color, category } = req.body;
+    const { name, pcCommand, icon, color, category, showLabel } = req.body;
 
     if (!name || !pcCommand) {
         return res.status(400).json({ error: "name en pcCommand zijn verplicht" });
@@ -991,7 +991,9 @@ adminApp.post("/api/consoledeck/apps", (req, res) => {
         pcCommand,
         icon: icon || "",
         color: color || "",
-        category: category || ""
+        category: category || "",
+        // als showLabel niet is meegestuurd -> standaard true
+        showLabel: showLabel === false || showLabel === "false" ? false : true
     };
 
     cfg.apps.push(app);
@@ -1039,6 +1041,30 @@ adminApp.post("/api/consoledeck/select", (req, res) => {
     saveConsoleDeckConfig(cfg);
 
     res.json({ selectedAppId: cfg.selectedAppId });
+});
+
+adminApp.put("/api/consoledeck/apps/:id", (req, res) => {
+    const { id } = req.params;
+    const { name, pcCommand, icon, color, category, showLabel } = req.body;
+
+    const cfg = loadConsoleDeckConfig();
+    const app = cfg.apps.find(a => a.id === id);
+
+    if (!app) {
+        return res.status(404).json({ error: "App niet gevonden" });
+    }
+
+    if (name !== undefined) app.name = name;
+    if (pcCommand !== undefined) app.pcCommand = pcCommand;
+    if (icon !== undefined) app.icon = icon;
+    if (color !== undefined) app.color = color;
+    if (category !== undefined) app.category = category;
+    if (showLabel !== undefined) {
+        app.showLabel = (showLabel === true || showLabel === "true");
+    }
+
+    saveConsoleDeckConfig(cfg);
+    res.json(app);
 });
 
 // ===== START HTTPS SERVER =====
