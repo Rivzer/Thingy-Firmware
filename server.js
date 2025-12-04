@@ -337,6 +337,53 @@ app.get("/spotify", async (req, res) => {
         }
     }
 
+    if (view === "recent") {
+        const token = await getValidToken();
+
+        if (!token) {
+            return res.render("spotify-recent", {
+                tracks: [],
+                notLoggedIn: true,
+                error: null,
+                initialBefore: null,
+                hasMore: false,
+            });
+        }
+
+        try {
+            const limit = 50;
+            const r = await axios.get(
+                "https://api.spotify.com/v1/me/player/recently-played",
+                {
+                    headers: { Authorization: `Bearer ${token}` },
+                    params: { limit }
+                }
+            );
+
+            const items = r.data.items || [];
+            const cursors = r.data.cursors || {};
+
+            return res.render("spotify-recent", {
+                tracks: items,
+                notLoggedIn: false,
+                error: null,
+                // gebruik cursor.before als startpunt voor oudere items
+                initialBefore: cursors.before || null,
+                hasMore: items.length === limit
+            });
+        } catch (e) {
+            console.log("Recently played error:", e.response?.data || e.message);
+
+            return res.render("spotify-recent", {
+                tracks: [],
+                notLoggedIn: false,
+                error: "Kon je recent afgespeelde nummers niet ophalen.",
+                initialBefore: null,
+                hasMore: false,
+            });
+        }
+    }
+
     // default dashboard
     res.render("spotify-dashboard");
 });
@@ -376,6 +423,7 @@ app.get("/api/qr", async (req, res) => {
         "user-read-currently-playing",
         "user-library-read",
         "user-library-modify",
+        "user-read-recently-played"
     ].join(" ");
 
     const params = querystring.stringify({
@@ -443,6 +491,39 @@ app.get("/api/liked", async (req, res) => {
     } catch (e) {
         console.log("Liked tracks API error:", e.response?.data || e.message);
         res.status(500).json({ error: "Failed to fetch liked tracks" });
+    }
+});
+
+// ===== API: SPOTIFY GET RECENTLY PLAYED =====
+app.get("/api/recent", async (req, res) => {
+    const token = await getValidToken();
+    if (!token) {
+        return res.status(401).json({ error: "Not logged in" });
+    }
+
+    const limit = 50; // Spotify max
+    const before = req.query.before || undefined;
+
+    try {
+        const r = await axios.get(
+            "https://api.spotify.com/v1/me/player/recently-played",
+            {
+                headers: { Authorization: `Bearer ${token}` },
+                params: { limit, before }
+            }
+        );
+
+        const items = r.data.items || [];
+        const cursors = r.data.cursors || {};
+
+        res.json({
+            items,
+            nextBefore: cursors.before || null,
+            hasMore: items.length === limit && !!cursors.before,
+        });
+    } catch (e) {
+        console.log("Recently played API error:", e.response?.data || e.message);
+        res.status(500).json({ error: "Failed to fetch recently played tracks" });
     }
 });
 
