@@ -1,0 +1,128 @@
+<style>
+    .console-deck-console,
+    .console-deck-console * {
+        box-sizing: border-box;
+    }
+
+    .console-deck-console {
+        background: #202125;
+        height: 480px;
+        position: relative;
+        overflow: hidden;
+        font-family: system-ui, sans-serif;
+        color: #fff;
+    }
+
+    .tile {
+        background: #424242;
+        border-radius: 15px;
+        width: 125px;
+        height: 125px;
+        position: absolute;
+        aspect-ratio: 1;
+        overflow: hidden;
+        cursor: pointer;
+    }
+
+    .tile-inner {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 8px;
+        text-align: center;
+    }
+
+    .tile img {
+        width: 48px;
+        height: 48px;
+        object-fit: contain;
+        margin-bottom: 6px;
+    }
+
+    .tile-name {
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+    .tile-sub {
+        font-size: 0.65rem;
+        color: #d0d0d0;
+    }
+
+    .tile.selected {
+        box-shadow: 0 0 0 3px #1db954;
+    }
+
+    .turn-back {
+        width: 48px;
+        height: 48px;
+        position: absolute;
+        right: 30px;
+        top: 16px;
+        cursor: pointer;
+    }
+</style>
+
+<%
+    const slots = [
+        { cls: "rectangle-37", left: 50,  top: 27  },
+        { cls: "rectangle-38", left: 50,  top: 177 },
+        { cls: "rectangle-43", left: 50,  top: 327 },
+        { cls: "rectangle-39", left: 223, top: 27  },
+        { cls: "rectangle-41", left: 223, top: 177 },
+        { cls: "rectangle-42", left: 223, top: 327 },
+        { cls: "rectangle-44", left: 396, top: 27  },
+        { cls: "rectangle-45", left: 396, top: 177 },
+        { cls: "rectangle-46", left: 396, top: 327 },
+        { cls: "rectangle-50", left: 569, top: 27  },
+        { cls: "rectangle-48", left: 569, top: 177 },
+        { cls: "rectangle-49", left: 569, top: 327 }
+    ];
+
+    const list = Array.isArray(apps) ? apps.slice(0, 12) : [];
+%>
+
+<div class="console-deck-console" id="consoleDeck">
+
+    <% list.forEach((app, index) => { 
+        const slot = slots[index];
+    %>
+        <div class="tile <%= selectedAppId === app.id ? 'selected' : '' %>"
+             style="left:<%= slot.left %>px; top:<%= slot.top %>px;"
+             data-app-id="<%= app.id %>">
+
+            <div class="tile-inner">
+                <img src="/spotify/img/turn-back.png" alt="">
+                <div class="tile-name"><%= app.name %></div>
+                <div class="tile-sub"><%= app.category || app.pcCommand %></div>
+            </div>
+        </div>
+    <% }) %>
+
+    <!-- Back button -->
+    <img class="turn-back" src="/spotify/img/turn-back.png" onclick="history.back()">
+</div>
+
+<script>
+    const deck = document.getElementById('consoleDeck');
+
+    deck.addEventListener('click', (e) => {
+        const tile = e.target.closest('.tile');
+        if (!tile) return;
+
+        const appId = tile.dataset.appId;
+        if (!appId) return;
+
+        console.log("Clicked app:", appId);
+
+        // Select visual
+        document.querySelectorAll('.tile').forEach(t => t.classList.remove('selected'));
+        tile.classList.add('selected');
+
+        // (later) open/select API call
+        // fetch('/api/consoledeck/select', { ... })
+    });
+</script>

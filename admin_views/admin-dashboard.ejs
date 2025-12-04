@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Thingy Admin – Console Deck</title>
+    <style>
+        body {
+            background: #121212;
+            color: white;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1, h2 {
+            margin: 0 0 10px;
+        }
+
+        .section {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #333;
+        }
+
+        .meta {
+            font-size: 0.85rem;
+            color: #aaa;
+            margin-bottom: 15px;
+        }
+
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .card {
+            background: #1b1b1b;
+            border-radius: 8px;
+            padding: 16px;
+            box-shadow: 0 0 0 1px #222;
+        }
+
+        .card-half {
+            flex: 1 1 280px;
+        }
+
+        label {
+            display: block;
+            font-size: 0.85rem;
+            margin-bottom: 2px;
+            color: #ccc;
+        }
+
+        input,
+        button {
+            margin: 2px 0 8px;
+            padding: 6px 8px;
+            border-radius: 4px;
+            border: 1px solid #333;
+            background: #181818;
+            color: white;
+            font-size: 0.9rem;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #1db954;
+        }
+
+        button {
+            cursor: pointer;
+            border: none;
+            background: #1db954;
+            font-weight: 600;
+        }
+
+        button:hover {
+            filter: brightness(1.05);
+        }
+
+        button.danger {
+            background: #c0392b;
+        }
+
+        button.secondary {
+            background: #444;
+        }
+
+        .app-row {
+            border-bottom: 1px solid #333;
+            padding: 8px 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .app-row.selected {
+            background: #1e1e1e;
+        }
+
+        .app-info {
+            flex: 1 1 auto;
+        }
+
+        .app-actions {
+            display: flex;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+
+        .pill {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 999px;
+            background: #2c3e50;
+            font-size: 0.7rem;
+            margin-top: 4px;
+            color: #ddd;
+        }
+
+        .empty-hint {
+            font-size: 0.9rem;
+            color: #888;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Thingy Admin – Console Deck</h1>
+    <div class="meta">
+        Device IP: <strong><%= ip %></strong> • UI port: <strong><%= port %></strong> •
+        WiFi configured: <strong><%= wifiConfigured ? "yes" : "no" %></strong>
+    </div>
+
+    <div class="row section">
+        <div class="card card-half">
+            <h2>Nieuwe app toevoegen</h2>
+            <form id="addForm">
+                <label for="name">Naam</label>
+                <input type="text" id="name" name="name" placeholder="Bijv. Spotify" required>
+
+                <label for="pcCommand">PC command (later voor HID / shortcuts)</label>
+                <input type="text" id="pcCommand" name="pcCommand" placeholder="Bijv. spotify.exe of steam://rungameid/..." required>
+
+                <label for="icon">Icon key (optioneel)</label>
+                <input type="text" id="icon" name="icon" placeholder="Bijv. spotify, steam, obs">
+
+                <label for="color">Kleur (optioneel, #RRGGBB)</label>
+                <input type="text" id="color" name="color" placeholder="#1DB954">
+
+                <label for="category">Categorie (optioneel)</label>
+                <input type="text" id="category" name="category" placeholder="Bijv. games, music, tools">
+
+                <button type="submit">Toevoegen</button>
+            </form>
+        </div>
+
+        <div class="card card-half">
+            <h2>Geselecteerde app</h2>
+            <% if (config.selectedAppId) { 
+                const current = config.apps.find(a => a.id === config.selectedAppId);
+            %>
+                <% if (current) { %>
+                    <p><strong><%= current.name %></strong></p>
+                    <p><small><%= current.pcCommand %></small></p>
+                    <% if (current.category) { %>
+                        <span class="pill"><%= current.category %></span>
+                    <% } %>
+                    <% if (current.color) { %>
+                        <span class="pill">kleur: <%= current.color %></span>
+                    <% } %>
+                <% } else { %>
+                    <p class="empty-hint">De geselecteerde app bestaat niet meer.</p>
+                <% } %>
+            <% } else { %>
+                <p class="empty-hint">Nog geen app geselecteerd. Klik op "Selecteren" bij een app hieronder.</p>
+            <% } %>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Bestaande apps</h2>
+
+        <div id="apps">
+            <% if (config.apps.length === 0) { %>
+                <p class="empty-hint">Nog geen apps toegevoegd. Voeg er eentje toe hierboven.</p>
+            <% } %>
+
+            <% config.apps.forEach(app => { %>
+                <div class="app-row <%= config.selectedAppId === app.id ? 'selected' : '' %>" data-id="<%= app.id %>">
+                    <div class="app-info">
+                        <strong><%= app.name %></strong><br>
+                        <small><%= app.pcCommand %></small><br>
+                        <% if (app.category) { %>
+                            <span class="pill"><%= app.category %></span>
+                        <% } %>
+                        <% if (app.color) { %>
+                            <span class="pill">kleur: <%= app.color %></span>
+                        <% } %>
+                    </div>
+                    <div class="app-actions">
+                        <button class="select-btn secondary">Selecteren</button>
+                        <button class="delete-btn danger">Verwijderen</button>
+                    </div>
+                </div>
+            <% }) %>
+        </div>
+    </div>
+
+    <script>
+        const addForm = document.getElementById('addForm');
+        const appsContainer = document.getElementById('apps');
+
+        addForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(addForm);
+            const body = Object.fromEntries(formData.entries());
+
+            try {
+                const res = await fetch('/api/consoledeck/apps', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+                const app = await res.json();
+
+                if (!res.ok) {
+                    alert('Fout bij toevoegen: ' + (app.error || 'unknown'));
+                    return;
+                }
+
+                const row = document.createElement('div');
+                row.className = 'app-row';
+                row.dataset.id = app.id;
+                row.innerHTML = `
+                    <div class="app-info">
+                        <strong>${app.name}</strong><br>
+                        <small>${app.pcCommand}</small><br>
+                        ${app.category ? `<span class="pill">${app.category}</span>` : ''}
+                        ${app.color ? `<span class="pill">kleur: ${app.color}</span>` : ''}
+                    </div>
+                    <div class="app-actions">
+                        <button class="select-btn secondary">Selecteren</button>
+                        <button class="delete-btn danger">Verwijderen</button>
+                    </div>
+                `;
+                appsContainer.appendChild(row);
+                addForm.reset();
+            } catch (err) {
+                console.error(err);
+                alert('Onbekende fout bij toevoegen');
+            }
+        });
+
+        appsContainer.addEventListener('click', async (e) => {
+            const row = e.target.closest('.app-row');
+            if (!row) return;
+            const id = row.dataset.id;
+
+            // Select
+            if (e.target.classList.contains('select-btn')) {
+                try {
+                    const res = await fetch('/api/consoledeck/select', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ id })
+                    });
+                    const data = await res.json();
+                    if (!res.ok) {
+                        alert('Fout bij selecteren: ' + (data.error || 'unknown'));
+                        return;
+                    }
+
+                    // UI highlight
+                    document.querySelectorAll('.app-row').forEach(r => r.classList.remove('selected'));
+                    row.classList.add('selected');
+
+                    // Optional: reload page to update "Geselecteerde app" kaart
+                    location.reload();
+                } catch (err) {
+                    console.error(err);
+                    alert('Onbekende fout bij selecteren');
+                }
+            }
+
+            // Delete
+            if (e.target.classList.contains('delete-btn')) {
+                if (!confirm('Deze app verwijderen?')) return;
+                try {
+                    const res = await fetch('/api/consoledeck/apps/' + encodeURIComponent(id), {
+                        method: 'DELETE'
+                    });
+                    const data = await res.json();
+                    if (!res.ok) {
+                        alert('Fout bij verwijderen: ' + (data.error || 'unknown'));
+                        return;
+                    }
+                    row.remove();
+                    // Als de geselecteerde app verwijderd is, is het netjes om even te reloaden
+                    location.reload();
+                } catch (err) {
+                    console.error(err);
+                    alert('Onbekende fout bij verwijderen');
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>

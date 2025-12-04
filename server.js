@@ -7,6 +7,7 @@ const axios = require("axios");
 const querystring = require("querystring");
 const fs = require("fs");
 const https = require("https");
+const http = require("http");
 const path = require("path");
 const selfsigned = require("selfsigned");
 const QRCode = require("qrcode");
@@ -14,21 +15,64 @@ const os = require("os");
 
 // ===== PATHS & CONSTANTS =====
 const APP_ROOT = __dirname;
-const TOKEN_FILE = path.join(APP_ROOT, "spotify_token.json");
-const DEVICE_CONFIG_FILE = path.join(APP_ROOT, "device_config.json");
 const CERT_DIR = path.join(APP_ROOT, "keys");
+const DATA_DIR = path.join(APP_ROOT, "data");
+
 const CERT_PATH = path.join(CERT_DIR, "cert.pem");
 const KEY_PATH = path.join(CERT_DIR, "key.pem");
-const FIRMWARE_FILE = path.join(APP_ROOT, "firmware.json");
+
+const FIRMWARE_FILE = path.join(DATA_DIR, "firmware.json");
+const TOKEN_FILE = path.join(DATA_DIR, "spotify_token.json");
+const DEVICE_CONFIG_FILE = path.join(DATA_DIR, "device_config.json");
+const CONSOLE_DECK_FILE = path.join(DATA_DIR, "console_deck.json");
+
 let currentFirmware = null;
 let firmwareError = null;
 
 // Spotify environment config
 const HOST_IP = getLocalIP();
 const PORT = process.env.PORT || 8888;
+const ADMIN_PORT = process.env.ADMIN_PORT || 8889;
 const CLIENT_ID = process.env.SPOTIFY_CLIENT_ID;
 const CLIENT_SECRET = process.env.SPOTIFY_SECRET_CLIENT_ID;
 const REDIRECT_URI = `https://${HOST_IP}:${PORT}/callback`;
+
+// ===== GENERIC DIR HELPERS =====
+function ensureDir(dir) {
+    if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+    }
+}
+// Zorg dat basis mappen altijd bestaan
+ensureDir(CERT_DIR);
+ensureDir(DATA_DIR);
+
+function loadConsoleDeckConfig() {
+    ensureDir(DATA_DIR);
+
+    if (!fs.existsSync(CONSOLE_DECK_FILE)) {
+        const defaultConfig = {
+            apps: [],
+            selectedAppId: null
+        };
+        fs.writeFileSync(CONSOLE_DECK_FILE, JSON.stringify(defaultConfig, null, 2));
+        return defaultConfig;
+    }
+
+    try {
+        const raw = fs.readFileSync(CONSOLE_DECK_FILE, "utf8");
+        return JSON.parse(raw);
+    } catch (e) {
+        console.error("❌ Error reading console_deck.json:", e.message);
+        return { apps: [], selectedAppId: null };
+    }
+}
+
+function saveConsoleDeckConfig(cfg) {
+    ensureDir(DATA_DIR);
+    fs.writeFileSync(CONSOLE_DECK_FILE, JSON.stringify(cfg, null, 2));
+}
+
 
 // ===== DEVICE CONFIG (FIRST RUN LOGIC) =====
 let deviceConfig = {
@@ -42,8 +86,7 @@ if (fs.existsSync(DEVICE_CONFIG_FILE)) {
     } catch {
         console.log("⚠️ Could not read device_config.json, using defaults.");
     }
-}
-else if (!fs.existsSync(DEVICE_CONFIG_FILE)) {
+} else {
     deviceConfig = {
         wifiConfigured: false,
         ap: {
@@ -56,12 +99,12 @@ else if (!fs.existsSync(DEVICE_CONFIG_FILE)) {
     };
 
     console.log("✔ device_config.json created:");
-
     fs.writeFileSync(DEVICE_CONFIG_FILE, JSON.stringify(deviceConfig, null, 2));
     deviceConfig = JSON.parse(fs.readFileSync(DEVICE_CONFIG_FILE, "utf8"));
     console.log("✔ device_config.json loaded:");
 }
 
+// ===== FIRMWARE LOADING =====
 if (!fs.existsSync(FIRMWARE_FILE)) {
     firmwareError = "firmware.json not found";
     console.error("❌", firmwareError);
@@ -109,6 +152,7 @@ function getLocalIP() {
  * Ensures HTTPS certificates exist; generates if missing.
  */
 function ensureCertificates() {
+    // CERT_DIR is hier al ensured, maar dit is idempotent
     if (!fs.existsSync(CERT_DIR)) {
         fs.mkdirSync(CERT_DIR, { recursive: true });
     }
@@ -284,7 +328,11 @@ app.get("/", (req, res) => {
 });
 
 app.get("/consoledeck", (req, res) => {
-    res.render("consoledeck");
+    const cfg = loadConsoleDeckConfig();
+    res.render("consoledeck", {
+        apps: cfg.apps || [],
+        selectedAppId: cfg.selectedAppId || null
+    });
 });
 
 app.get("/spotify", async (req, res) => {
@@ -293,8 +341,7 @@ app.get("/spotify", async (req, res) => {
     if (view === "nowplaying") {
         return res.render("spotify-nowplaying");
     }
-
-    if (view === "likedplaylist") {
+    else if (view === "likedplaylist") {
         const token = await getValidToken();
 
         if (!token) {
@@ -318,11 +365,11 @@ app.get("/spotify", async (req, res) => {
             const total = r.data.total || items.length;
 
             return res.render("spotify-liked-playlist", {
-                tracks: items,          // eerste 50
+                tracks: items,
                 notLoggedIn: false,
                 error: null,
-                initialOffset: limit,   // start offset voor volgende load
-                total,                  // totaal aantal liked songs
+                initialOffset: limit,
+                total,
             });
         } catch (e) {
             console.log("Liked tracks error:", e.response?.data || e.message);
@@ -336,8 +383,7 @@ app.get("/spotify", async (req, res) => {
             });
         }
     }
-
-    if (view === "recent") {
+    else if (view === "recent") {
         const token = await getValidToken();
 
         if (!token) {
@@ -367,7 +413,6 @@ app.get("/spotify", async (req, res) => {
                 tracks: items,
                 notLoggedIn: false,
                 error: null,
-                // gebruik cursor.before als startpunt voor oudere items
                 initialBefore: cursors.before || null,
                 hasMore: items.length === limit
             });
@@ -380,6 +425,48 @@ app.get("/spotify", async (req, res) => {
                 error: "Kon je recent afgespeelde nummers niet ophalen.",
                 initialBefore: null,
                 hasMore: false,
+            });
+        }
+    }
+    else if (view === "playlists") {
+        const token = await getValidToken();
+
+        if (!token) {
+            return res.render("spotify-playlists", {
+                playlists: [],
+                notLoggedIn: true,
+                error: null,
+                initialOffset: 0,
+                total: 0,
+            });
+        }
+
+        try {
+            const limit = 50;
+            const r = await axios.get("https://api.spotify.com/v1/me/playlists", {
+                headers: { Authorization: `Bearer ${token}` },
+                params: { limit, offset: 0 },
+            });
+
+            const items = r.data.items || [];
+            const total = r.data.total || items.length;
+
+            return res.render("spotify-playlists", {
+                playlists: items,
+                notLoggedIn: false,
+                error: null,
+                initialOffset: limit,
+                total,
+            });
+        } catch (e) {
+            console.log("Playlists error:", e.response?.data || e.message);
+
+            return res.render("spotify-playlists", {
+                playlists: [],
+                notLoggedIn: false,
+                error: "Kon je playlists niet ophalen.",
+                initialOffset: 0,
+                total: 0,
             });
         }
     }
@@ -423,7 +510,9 @@ app.get("/api/qr", async (req, res) => {
         "user-read-currently-playing",
         "user-library-read",
         "user-library-modify",
-        "user-read-recently-played"
+        "user-read-recently-played",
+        "playlist-read-private",
+        "playlist-read-collaborative"
     ].join(" ");
 
     const params = querystring.stringify({
@@ -439,6 +528,60 @@ app.get("/api/qr", async (req, res) => {
     res.json({ qr, url: authUrl });
 });
 
+// ===== API: SPOTIFY GET USER PLAYLISTS =====
+app.get("/api/playlists", async (req, res) => {
+    const token = await getValidToken();
+    if (!token) {
+        return res.status(401).json({ error: "Not logged in" });
+    }
+
+    const limit = 50;
+    const offset = Number(req.query.offset) || 0;
+
+    try {
+        const r = await axios.get("https://api.spotify.com/v1/me/playlists", {
+            headers: { Authorization: `Bearer ${token}` },
+            params: { limit, offset },
+        });
+
+        res.json({
+            items: r.data.items || [],
+            total: r.data.total || 0,
+            nextOffset: offset + limit,
+            hasMore: (offset + limit) < (r.data.total || 0),
+        });
+    } catch (e) {
+        console.log("Playlists API error:", e.response?.data || e.message);
+        res.status(500).json({ error: "Failed to fetch playlists" });
+    }
+});
+
+// ===== API: SPOTIFY PLAY PLAYLIST =====
+app.get("/api/play-playlist", async (req, res) => {
+    const token = await getValidToken();
+    if (!token) return res.status(401).send("Not logged in");
+
+    const id = req.query.playlist;
+    if (!id) return res.status(400).send("Missing playlist id");
+
+    try {
+        await axios.put(
+            "https://api.spotify.com/v1/me/player/play",
+            {
+                context_uri: `spotify:playlist:${id}`,
+            },
+            {
+                headers: { Authorization: `Bearer ${token}` },
+            }
+        );
+
+        res.send("OK");
+    } catch (err) {
+        console.log("Play playlist error:", err.response?.data || err.message);
+        res.status(500).send("Error playing playlist");
+    }
+});
+
 // ===== API: SPOTIFY PLAY TRACK =====
 app.get("/api/play-track", async (req, res) => {
     const token = await getValidToken();
@@ -448,7 +591,6 @@ app.get("/api/play-track", async (req, res) => {
     if (!id) return res.status(400).send("Missing track id");
 
     try {
-        // Speel deze specifieke track op het actieve apparaat
         await axios.put(
             "https://api.spotify.com/v1/me/player/play",
             {
@@ -789,13 +931,115 @@ app.get("/api/unlike", async (req, res) => {
 
 app.get("/api/device-config", (req, res) => {
     try {
-        const cfg = JSON.parse(fs.readFileSync("device_config.json", "utf8"));
+        const cfg = JSON.parse(fs.readFileSync(DEVICE_CONFIG_FILE, "utf8"));
         res.json({ time24: cfg.time_format_24h !== false }); // default = 24h
     } catch (e) {
         res.json({ time24: true }); // fallback
     }
 });
 
+// ===== ADMIN APP SETUP =====
+const adminApp = express();
+
+adminApp.set("view engine", "ejs");
+adminApp.set("views", path.join(__dirname, "admin_views"));
+
+adminApp.use(express.json());
+adminApp.use(express.urlencoded({ extended: true }));
+adminApp.use(express.static(path.join(__dirname, "admin_public")));
+
+adminApp.get("/", (req, res) => {
+    const cfg = loadConsoleDeckConfig();
+
+    res.render("admin-dashboard", {
+        ip: HOST_IP,
+        port: PORT,
+        wifiConfigured: isWiFiConfigured,
+        config: cfg
+    });
+});
+
+// ===== CONSOLE DECK API (ADMIN) =====
+
+// Volledige config (optioneel, handig voor debug)
+adminApp.get("/api/consoledeck", (req, res) => {
+    const cfg = loadConsoleDeckConfig();
+    res.json(cfg);
+});
+
+// Alleen de geselecteerde app (voor later gebruik)
+adminApp.get("/api/consoledeck/selected", (req, res) => {
+    const cfg = loadConsoleDeckConfig();
+    const selected = cfg.apps.find(a => a.id === cfg.selectedAppId) || null;
+    res.json({ selectedAppId: cfg.selectedAppId, app: selected });
+});
+
+// Nieuwe app toevoegen (gebruik je in admin-dashboard.ejs)
+adminApp.post("/api/consoledeck/apps", (req, res) => {
+    const { name, pcCommand, icon, color, category } = req.body;
+
+    if (!name || !pcCommand) {
+        return res.status(400).json({ error: "name en pcCommand zijn verplicht" });
+    }
+
+    const cfg = loadConsoleDeckConfig();
+
+    const id = "app_" + Date.now();
+    const app = {
+        id,
+        name,
+        pcCommand,
+        icon: icon || "",
+        color: color || "",
+        category: category || ""
+    };
+
+    cfg.apps.push(app);
+    saveConsoleDeckConfig(cfg);
+
+    res.json(app);
+});
+
+// App verwijderen (gebruik je bij delete button)
+adminApp.delete("/api/consoledeck/apps/:id", (req, res) => {
+    const { id } = req.params;
+
+    const cfg = loadConsoleDeckConfig();
+    const index = cfg.apps.findIndex(a => a.id === id);
+
+    if (index === -1) {
+        return res.status(404).json({ error: "App niet gevonden" });
+    }
+
+    const [removed] = cfg.apps.splice(index, 1);
+
+    if (cfg.selectedAppId === id) {
+        cfg.selectedAppId = null;
+    }
+
+    saveConsoleDeckConfig(cfg);
+    res.json({ removed });
+});
+
+// App selecteren (wat later gebruikt zal worden om iets te openen)
+adminApp.post("/api/consoledeck/select", (req, res) => {
+    const { id } = req.body;
+
+    const cfg = loadConsoleDeckConfig();
+
+    // id kan ook null zijn om "niets geselecteerd" te doen
+    if (id !== null) {
+        const app = cfg.apps.find(a => a.id === id);
+        if (!app) {
+            return res.status(404).json({ error: "App niet gevonden" });
+        }
+    }
+
+    cfg.selectedAppId = id;
+    saveConsoleDeckConfig(cfg);
+
+    res.json({ selectedAppId: cfg.selectedAppId });
+});
 
 // ===== START HTTPS SERVER =====
 ensureCertificates();
@@ -810,4 +1054,11 @@ https
     )
     .listen(PORT, () => {
         console.log(`🔒 HTTPS Server running at https://${HOST_IP}:${PORT}`);
+    });
+
+// ===== START HTTP SERVER (ADMIN UI) =====
+http
+    .createServer(adminApp)
+    .listen(ADMIN_PORT, () => {
+        console.log(`🛠 Admin server running at http://${HOST_IP}:${ADMIN_PORT}`);
     });

@@ -1,0 +1,13 @@
+{
+  "apps": [
+    {
+      "id": "app_1764888785427",
+      "name": "OBS",
+      "pcCommand": "obs",
+      "icon": "https://images-eds-ssl.xboxlive.com/image?url=4rt9.lXDC4H_93laV1_eHHFT949fUipzkiFOBH3fAiZZUCdYojwUyX2aTonS1aIwMrx6NUIsHfUHSLzjGJFxxrAWesIFQqd_JTUGW7KWQr7gVGk5Uvj7NiexhuSQMilvh0o6jqB6wJ8f5XKag.dFyVWfFeJx4CZGXGXmGgz9ieg-&format=source",
+      "color": "",
+      "category": ""
+    }
+  ],
+  "selectedAppId": null
+}
