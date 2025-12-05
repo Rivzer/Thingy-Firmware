@@ -27,10 +27,8 @@ keys/*
 # ==========================
 # App-specific sensitive files
 # ==========================
-spotify_token.json
-token.json
-device_config.json
-firmware.json
+data/*
+!data/
 
 # Backup files
 *.bak

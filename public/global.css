@@ -1,5 +1,6 @@
 body {
-    width: 800px;
+  width: 800px;
+  height: 480px; 
 }
 .back-button {
     width: 48px;

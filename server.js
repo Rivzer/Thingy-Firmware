@@ -929,9 +929,10 @@ app.get("/api/unlike", async (req, res) => {
     res.send("OK");
 });
 
-app.get("/api/device-config", (req, res) => {
+app.get("/api/device-config", async (req, res) => {
     try {
-        const cfg = JSON.parse(fs.readFileSync(DEVICE_CONFIG_FILE, "utf8"));
+        // TODO: fix time get on start
+        const cfg = await JSON.parse(fs.readFileSync(DEVICE_CONFIG_FILE, "utf8"));
         res.json({ time24: cfg.time_format_24h !== false }); // default = 24h
     } catch (e) {
         res.json({ time24: true }); // fallback

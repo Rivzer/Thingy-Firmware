@@ -6,7 +6,6 @@
 
     .console-deck-console {
         background: #202125;
-        height: 480px;
         position: relative;
         overflow: hidden;
         font-family: system-ui, sans-serif;
@@ -69,38 +68,48 @@
     }
 </style>
 
-<% const slots=[ { cls: "rectangle-37" , left: 50, top: 27 }, { cls: "rectangle-38" , left: 50, top: 177 }, {
-    cls: "rectangle-43" , left: 50, top: 327 }, { cls: "rectangle-39" , left: 223, top: 27 }, { cls: "rectangle-41" ,
-    left: 223, top: 177 }, { cls: "rectangle-42" , left: 223, top: 327 }, { cls: "rectangle-44" , left: 396, top: 27 },
-    { cls: "rectangle-45" , left: 396, top: 177 }, { cls: "rectangle-46" , left: 396, top: 327 }, { cls: "rectangle-50"
-    , left: 569, top: 27 }, { cls: "rectangle-48" , left: 569, top: 177 }, { cls: "rectangle-49" , left: 569, top: 327 }
-    ]; const list=Array.isArray(apps) ? apps.slice(0, 12) : []; %>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/global.css">
+    <!-- TODO: fix the height issue !-->
+    <title>Console deck</title>
+</head>
+<body>
+    <% const slots=[ { cls: "rectangle-37" , left: 50, top: 27 }, { cls: "rectangle-38" , left: 50, top: 177 }, {
+        cls: "rectangle-43" , left: 50, top: 327 }, { cls: "rectangle-39" , left: 223, top: 27 }, { cls: "rectangle-41" ,
+        left: 223, top: 177 }, { cls: "rectangle-42" , left: 223, top: 327 }, { cls: "rectangle-44" , left: 396, top: 27 },
+        { cls: "rectangle-45" , left: 396, top: 177 }, { cls: "rectangle-46" , left: 396, top: 327 }, { cls: "rectangle-50"
+        , left: 569, top: 27 }, { cls: "rectangle-48" , left: 569, top: 177 }, { cls: "rectangle-49" , left: 569, top: 327 }
+        ]; const list=Array.isArray(apps) ? apps.slice(0, 12) : []; %>
 
-    <div class="console-deck-console" id="consoleDeck">
+        <div class="console-deck-console" id="consoleDeck">
 
-        <% list.forEach((app, index)=> {
-            const slot = slots[index];
-            const showLabel = (app.showLabel !== false); // default = aan
-            %>
-            <div class="tile <%= selectedAppId === app.id ? 'selected' : '' %>" style="
-            left:<%= slot.left %>px;
-            top:<%= slot.top %>px;
-            background-image:url('<%= app.icon %>');
-         " data-app-id="<%= app.id %>">
+            <% list.forEach((app, index)=> {
+                const slot = slots[index];
+                const showLabel = (app.showLabel !== false); // default = aan
+                %>
+                <div class="tile <%= selectedAppId === app.id ? 'selected' : '' %>" style="
+                left:<%= slot.left %>px;
+                top:<%= slot.top %>px;
+                background-image:url('<%= app.icon %>');
+            " data-app-id="<%= app.id %>">
 
-                <% if (showLabel) { %>
-                    <div class="tile-inner">
-                        <div class="tile-name">
-                            <%= app.name %>
+                    <% if (showLabel) { %>
+                        <div class="tile-inner">
+                            <div class="tile-name">
+                                <%= app.name %>
+                            </div>
+                            <div class="tile-sub">
+                                <%= app.category || '' %>
+                            </div>
                         </div>
-                        <div class="tile-sub">
-                            <%= app.category || '' %>
-                        </div>
-                    </div>
-                    <% } %>
+                        <% } %>
 
-            </div>
-            <% }) %>
+                </div>
+                <% }) %>
 
 
                 <!-- Back button -->
@@ -127,3 +136,5 @@
             // fetch('/api/consoledeck/select', { ... })
         });
     </script>
+</body>
+</html>
