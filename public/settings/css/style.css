@@ -8,291 +8,181 @@
   height: 480px;
   position: relative;
   overflow: hidden;
+  font-family: "Poppins", system-ui, sans-serif;
 }
 
-/* RESET BUTTON */
-.rectangle-12 {
-  background: #404957;
-  border-radius: 10px;
-  width: 96px;
-  height: 36px;
-  position: absolute;
-  left: 258px;
-  top: 415px;
-}
-
-.reset {
-  color: #d26060;
+.settings-title {
+  color: #ffffff;
   text-align: center;
   font-family: "Poppins-Bold", sans-serif;
-  font-size: 16px;
+  font-size: 32px;
   font-weight: 700;
   position: absolute;
-  left: 258px;
-  top: 415px;
-  width: 96px;
-  height: 36px;
-  line-height: 36px;
+  left: 50%;
+  top: 20px;
+  transform: translateX(-50%);
 }
 
-/* RECONFIGURE WIFI */
-.rectangle-24 {
-  background: #404957;
-  border-radius: 10px;
-  width: 177px;
-  height: 36px;
+/* LIST CONTAINER */
+.settings-list {
   position: absolute;
-  left: 364px;
-  top: 415px;
-}
-
-.reconfigure-wi-fi {
-  color: #d26060;
-  text-align: center;
-  font-family: "Poppins-Bold", sanssans-serif;
-  font-size: 16px;
-  font-weight: 700;
-  position: absolute;
-  left: 364px;
-  top: 415px;
-  width: 177px;
-  height: 36px;
-  line-height: 36px;
-}
-
-/* APP SETTINGS */
-.rectangle-242 {
-  background: #404957;
-  border-radius: 10px;
+  left: 50%;
+  top: 90px;
+  transform: translateX(-50%);
   width: 371px;
-  height: 42px;
-  position: absolute;
-  left: 216px;
-  top: 160px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
-.app-settings {
+/* GENERIC ROW */
+.settings-row {
+  background: #404957;
+  border-radius: 10px;
+  height: 42px;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;      /* verticaal centreren */
+  justify-content: space-between;
   color: #ffffff;
-  text-align: left;
-  font-family: "Poppins-Bold", sans-serif;
   font-size: 17px;
   font-weight: 700;
-  position: absolute;
-  left: 231px;
-  top: 160px;
-  width: 371px;
-  height: 42px;
-  line-height: 42px;
 }
 
-/* DEVICE INFORMATION */
-.rectangle-243 {
-  background: #404957;
-  border-radius: 10px;
-  width: 371px;
-  height: 42px;
-  position: absolute;
-  left: 216px;
-  top: 278px;
+/* Klikbare rows (navigatie) */
+.settings-row-clickable {
+  cursor: pointer;
 }
 
-.device-information {
-  color: #ffffff;
-  text-align: left;
-  font-family: "Poppins-Bold", sans-serif;
-  font-size: 17px;
-  font-weight: 700;
-  position: absolute;
-  left: 231px;
-  top: 278px;
-  width: 371px;
-  height: 42px;
-  line-height: 42px;
+.settings-row-clickable:hover {
+  background: #4a5463;
 }
 
-/* TIME ZONE */
-.rectangle-244 {
-  background: #404957;
-  border-radius: 10px;
-  width: 371px;
-  height: 42px;
-  position: absolute;
-  left: 216px;
-  top: 337px;
+.settings-label {
+  flex: 0 0 auto;
 }
 
-.time-zone {
-  color: #ffffff;
-  text-align: left;
-  font-family: "Poppins-Bold", sans-serif;
-  font-size: 17px;
-  font-weight: 700;
-  position: absolute;
-  left: 231px;
-  top: 337px;
-  width: 371px;
-  height: 42px;
-  line-height: 42px;
+.settings-value {
+  margin-left: auto;
+  font-size: 15px;
+  opacity: 0.9;
+}
+
+.settings-chevron {
+  margin-left: auto;
+  font-size: 20px;
+  opacity: 0.7;
+}
+
+/* TOGGLE (Dark Mode) */
+.toggle-switch {
+  width: 43px;
+  height: 22px;
+  border-radius: 15px;
+  background: #8bafde;
+  display: flex;
+  align-items: center;
+  padding: 0 2px;
+}
+
+.toggle-knob {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #ffffff;
+  margin-left: auto;  /* currently "on" rechts */
 }
 
 /* TIMEZONE SELECTOR */
-.rectangle-23 {
+.timezone-wrapper {
+  position: relative;
+}
+
+.timezone-display {
   background: #5a6474;
   border-radius: 10px;
-  width: 125.57px;
   height: 26px;
-  position: absolute;
-  left: 457px;
-  top: 345px;
+  padding: 0 8px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  min-width: 150px;
 }
 
-.brussel {
-  color: #ffffff;
-  text-align: left;
-  font-family: "Poppins-Bold", sans-serif;
+.timezone-text {
   font-size: 12px;
   font-weight: 700;
-  position: absolute;
-  left: 466px;
-  top: 345px;
-  width: 125.57px;
-  height: 26px;
-  line-height: 26px;
 }
 
-.chat-gpt-image-25-nov-2025-20-28-21-4 {
-  width: 11px;
-  height: 11px;
-  position: absolute;
-  left: 560px;
-  top: 353px;
-  transform-origin: 0 0;
-  transform: rotate(-90deg) scale(1, -1);
-  object-fit: cover;
+.tz-arrow {
+  margin-left: auto;
+  font-size: 0.7rem;
+  opacity: 0.7;
 }
 
-/* LANGUAGE SELECTOR */
-.rectangle-10 {
-  background: #404957;
+.timezone-list {
+  position: fixed;              
+  top: 50%;                     
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 260px;                 
+  max-height: 300px;            
+  overflow-y: auto;
+  background: #2b2d31;
   border-radius: 10px;
-  width: 371px;
-  height: 42px;
-  position: absolute;
-  left: 216px;
-  top: 219px;
+  padding: 10px 0;
+  z-index: 5000;                
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.55);
 }
 
-.language {
-  color: #ffffff;
-  text-align: left;
-  font-family: "Poppins-Bold", sans-serif;
-  font-size: 17px;
-  font-weight: 700;
-  position: absolute;
-  left: 231px;
-  top: 219px;
-  width: 371px;
-  height: 42px;
-  line-height: 42px;
+.timezone-list.hidden {
+  display: none;
 }
 
-.rectangle-232 {
-  background: #5a6474;
+.timezone-option {
+  padding: 10px;
+  color: #ddd;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.timezone-option:hover {
+  background: #3a3b3f;
+}
+
+/* ACTION ROW (Reset / Reconfigure WiFi) */
+.settings-row-actions {
+  justify-content: center;
+  gap: 10px;
+}
+
+.btn {
   border-radius: 10px;
-  width: 91.57px;
-  height: 26px;
-  position: absolute;
-  left: 491px;
-  top: 227px;
-}
-
-.english {
-  color: #ffffff;
-  text-align: left;
+  padding: 6px 12px;
+  border: none;
+  cursor: pointer;
   font-family: "Poppins-Bold", sans-serif;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 700;
-  position: absolute;
-  left: 501px;
-  top: 227px;
-  width: 91.57px;
-  height: 26px;
-  line-height: 26px;
 }
 
-.chat-gpt-image-25-nov-2025-20-28-21-42 {
-  width: 11px;
-  height: 11px;
-  position: absolute;
-  left: 560px;
-  top: 235px;
-  transform-origin: 0 0;
-  transform: rotate(-90deg) scale(1, -1);
-  object-fit: cover;
-}
-
-/* DARK MODE */
-.rectangle-9 {
-  background: #404957;
-  border-radius: 10px;
-  width: 371px;
-  height: 42px;
-  position: absolute;
-  left: 216px;
-  top: 101px;
-}
-
-.dark-mode {
+.btn-danger {
+  background: #d26060;
   color: #ffffff;
-  text-align: left;
-  font-family: "Poppins-Bold", sans-serif;
-  font-size: 17px;
-  font-weight: 700;
-  position: absolute;
-  left: 231px;
-  top: 101px;
-  width: 371px;
-  height: 42px;
-  line-height: 42px;
 }
 
-.rectangle-102 {
-  background: #8bafde;
-  border-radius: 15px;
-  width: 43px;
-  height: 22px;
-  position: absolute;
-  left: 530px;
-  top: 111px;
+.btn-danger-outline {
+  background: transparent;
+  border: 1px solid #d26060;
+  color: #d26060;
+}
+.dropdown-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 4000;
 }
 
-.rectangle-11 {
-  background: #ffffff;
-  border-radius: 15px;
-  width: 22px;
-  height: 22px;
-  position: absolute;
-  left: 551px;
-  top: 111px;
-}
-
-/* HEADER */
-.turn-back-1-1 {
-  width: 48px;
-  height: 48px;
-  position: absolute;
-  left: 27px;
-  top: 23px;
-  object-fit: cover;
-}
-
-.settings2 {
-  color: #ffffff;
-  text-align: left;
-  font-family: "Poppins-Bold", sans-serif;
-  font-size: 40px;
-  font-weight: 700;
-  position: absolute;
-  left: 315px;
-  top: 17px;
+.hidden {
+  display: none;
 }

@@ -1,13 +1,19 @@
-// Global time utility functions
-
+let use24h = true;
 
 async function loadTimeFormat() {
     try {
         const r = await fetch("/api/device-config");
         const d = await r.json();
-        use24h = d.time24;
+
+        if (typeof d.time_format_24h === "boolean") {
+            use24h = d.time_format_24h;
+        }
+
+        console.log("Time format loaded:", use24h);
+
     } catch (e) {
         console.warn("Could not load time format:", e);
+        use24h = true;
     }
 }
 
@@ -20,62 +26,45 @@ function getDayWithSuffix(day) {
     return day + "th";
 }
 
-
 function getFormattedTime() {
     const now = new Date();
-    
+
     let hours = now.getHours();
     const minutes = now.getMinutes().toString().padStart(2, '0');
-    
+
     let suffix = "";
-    
+
     if (!use24h) {
         suffix = hours >= 12 ? " PM" : " AM";
         hours = hours % 12;
         if (hours === 0) hours = 12;
     }
-    
+
     const hoursStr = use24h ? hours.toString().padStart(2, '0') : hours.toString();
     const timeString = `${hoursStr}:${minutes}${suffix}`;
-    
-    // Date
+
     const day = now.getDate();
     const dayWithSuffix = getDayWithSuffix(day);
-    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
-        "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const monthNames = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
     const monthName = monthNames[now.getMonth()];
-    
-    const dateString = `${dayWithSuffix} ${monthName}`;
-    
+
     return {
         time: timeString,
-        date: dateString,
-        hours: hours,
-        minutes: minutes,
-        suffix: suffix,
-        day: day,
-        month: monthName,
-        raw: now
+        date: `${dayWithSuffix} ${monthName}`
     };
 }
 
 function initLiveClock() {
     function updateClock() {
-        const timeData = getFormattedTime();
-        
-        const timeEl = document.querySelector('.time');
-        const dateEl = document.querySelector('.date');
-        
-        if (timeEl) timeEl.textContent = timeData.time;
-        if (dateEl) dateEl.textContent = timeData.date;
+        const t = getFormattedTime();
+        document.querySelector('.time').textContent = t.time;
+        document.querySelector('.date').textContent = t.date;
     }
-    
-    // Start clock after time format is loaded
+
     setTimeout(() => {
         updateClock();
         setInterval(updateClock, 1000);
     }, 100);
 }
 
-// Initialize on load
 loadTimeFormat();

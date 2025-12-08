@@ -1,0 +1,61 @@
+.weather-screen,
+.weather-screen * {
+  box-sizing: border-box;
+}
+
+.weather-screen {
+  background: #202125;
+  height: 480px;
+  position: relative;
+  overflow: hidden;
+  font-family: "Poppins", system-ui, sans-serif;
+}
+
+.weather-title {
+  color: #ffffff;
+  text-align: center;
+  font-family: "Poppins-Bold", sans-serif;
+  font-size: 32px;
+  font-weight: 700;
+  position: absolute;
+  left: 50%;
+  top: 20px;
+  transform: translateX(-50%);
+}
+
+/* Card */
+.weather-card {
+  position: absolute;
+  left: 50%;
+  top: 120px;
+  transform: translateX(-50%);
+  width: 260px;
+  padding: 20px;
+  border-radius: 16px;
+  background: linear-gradient(145deg, #404957, #2a2f38);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.35);
+  text-align: center;
+  color: #ffffff;
+}
+
+.weather-location {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.weather-temp {
+  font-size: 48px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.weather-condition {
+  font-size: 18px;
+  margin-bottom: 12px;
+}
+
+.weather-meta {
+  font-size: 12px;
+  opacity: 0.8;
+}

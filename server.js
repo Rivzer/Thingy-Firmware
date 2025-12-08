@@ -12,6 +12,8 @@ const path = require("path");
 const selfsigned = require("selfsigned");
 const QRCode = require("qrcode");
 const os = require("os");
+const { exec } = require("child_process");
+const dns = require("dns");
 
 // ===== PATHS & CONSTANTS =====
 const APP_ROOT = __dirname;
@@ -73,7 +75,6 @@ function saveConsoleDeckConfig(cfg) {
     fs.writeFileSync(CONSOLE_DECK_FILE, JSON.stringify(cfg, null, 2));
 }
 
-
 // ===== DEVICE CONFIG (FIRST RUN LOGIC) =====
 let deviceConfig = {
     wifiConfigured: false,
@@ -94,8 +95,15 @@ if (fs.existsSync(DEVICE_CONFIG_FILE)) {
             password: ""
         },
         device_name: "Raspberry Pi Zero 2W",
-        time_zone: "Europe/London",
-        time_format_24h: true
+        time_format_24h: true,
+        time_zone: "Europe/Brussels",
+        location: {
+            city: "Brussels",
+            country: "BE",
+            lat: 50.8466,
+            lon: 4.3528,
+            source: "default"
+        }
     };
 
     console.log("✔ device_config.json created:");
@@ -148,11 +156,99 @@ function getLocalIP() {
     return "127.0.0.1";
 }
 
-/**
- * Ensures HTTPS certificates exist; generates if missing.
- */
+function hasInternet() {
+    return new Promise((resolve) => {
+        dns.lookup("google.com", (err) => {
+            if (err) {
+                console.log("❌ Geen internet:", err.code || err.message);
+                return resolve(false);
+            }
+            resolve(true);
+        });
+    });
+}
+
+async function autoDetectLocationFromIP() {
+    try {
+        const res = await axios.get("https://ipapi.co/json/", { timeout: 5000 });
+        const data = res.data;
+        if (!data) {
+            console.log("⚠️ Geen data van IP geolocation");
+            return;
+        }
+
+        const {
+            city,
+            country_name,
+            country_code,
+            latitude,
+            longitude,
+            timezone
+        } = data;
+
+        if (!latitude || !longitude) {
+            console.log("⚠️ Geen lat/lon in geolocatie");
+            return;
+        }
+
+        let cfg = {};
+        try {
+            cfg = JSON.parse(fs.readFileSync(DEVICE_CONFIG_FILE, "utf8"));
+        } catch {
+            cfg = {};
+        }
+
+        cfg.location = {
+            city: city || "Unknown",
+            country: country_code || country_name || "",
+            lat: latitude,
+            lon: longitude,
+            source: "ip-auto"
+        };
+
+        if (timezone) {
+            cfg.time_zone = timezone;
+        } else if (!cfg.time_zone) {
+            cfg.time_zone = "Europe/Brussels";
+        }
+
+        fs.writeFileSync(DEVICE_CONFIG_FILE, JSON.stringify(cfg, null, 2));
+        console.log("📍 Auto location updated from IP:", cfg.location, "tz:", cfg.time_zone);
+
+        deviceConfig = cfg;
+    } catch (err) {
+        console.error("❌ Failed to auto-detect location from IP:", err.message || err);
+    }
+}
+
+function mapWeatherCode(code) {
+    if (code === 0) return { condition: "Clear sky", icon: "☀️" };
+    if ([1, 2, 3].includes(code)) return { condition: "Partly cloudy", icon: "⛅" };
+    if ([45, 48].includes(code)) return { condition: "Fog", icon: "🌫️" };
+    if ([51, 53, 55].includes(code)) return { condition: "Drizzle", icon: "🌦️" };
+    if ([61, 63, 65].includes(code)) return { condition: "Rain", icon: "🌧️" };
+    if ([71, 73, 75].includes(code)) return { condition: "Snow", icon: "❄️" };
+    if ([80, 81, 82].includes(code)) return { condition: "Showers", icon: "🌧️" };
+    if ([95, 96, 99].includes(code)) return { condition: "Thunderstorm", icon: "⛈️" };
+
+    return { condition: "Unknown", icon: "❔" };
+}
+
+function getLocationFromConfig(cfg) {
+    if (cfg && cfg.location && typeof cfg.location.lat === "number" && typeof cfg.location.lon === "number") {
+        return cfg.location;
+    }
+
+    return {
+        city: "Brussels",
+        country: "BE",
+        lat: 50.8466,
+        lon: 4.3528,
+        source: "fallback"
+    };
+}
+
 function ensureCertificates() {
-    // CERT_DIR is hier al ensured, maar dit is idempotent
     if (!fs.existsSync(CERT_DIR)) {
         fs.mkdirSync(CERT_DIR, { recursive: true });
     }
@@ -176,9 +272,6 @@ function ensureCertificates() {
     }
 }
 
-/**
- * Returns a valid Spotify access token (auto-refresh).
- */
 async function getValidToken() {
     if (!fs.existsSync(TOKEN_FILE)) {
         return null;
@@ -291,6 +384,16 @@ async function checkFirmwareUpdate() {
     }
 }
 
+// ==== AUTO SETUP =====
+(async () => {
+    if (!deviceConfig.location || !deviceConfig.location.lat || !deviceConfig.location.lon) {
+        console.log("🌍 No location in config yet, trying auto-detect via IP...");
+        await autoDetectLocationFromIP();
+    } else {
+        console.log("📍 Using existing location from config:", deviceConfig.location);
+    }
+})();
+
 // ===== EXPRESS APP SETUP =====
 const app = express();
 
@@ -298,6 +401,7 @@ app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 
 app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 app.use(express.static("public"));
 
 console.log("🔍 Device IP:", HOST_IP);
@@ -309,763 +413,59 @@ app.use((req, res, next) => {
     return res.redirect("/wifi-setup");
 });
 
-app.get("/wifi-setup", async (req, res) => {
-    if (isWiFiConfigured) return res.redirect("/");
-
-    const wifiPayload = `WIFI:T:${WIFI_AP_AUTH_TYPE};S:${WIFI_AP_SSID};P:${WIFI_AP_PASSWORD};;`;
-    const qrDataUrl = await QRCode.toDataURL(wifiPayload);
-
-    res.render("wifi-setup", {
-        qr: qrDataUrl,
-        ssid: WIFI_AP_SSID,
-        password: WIFI_AP_PASSWORD
-    });
+// ===== ROUTES =====
+require("./routes/wifi-routes").registerWifiRoutes(app, {
+    isWiFiConfigured,
+    WIFI_AP_AUTH_TYPE,
+    WIFI_AP_SSID,
+    WIFI_AP_PASSWORD,
+    QRCode
 });
 
-// ===== Thingy MIDDLEWARE =====
-app.get("/", (req, res) => {
-    res.render("index");
+require("./routes/core-routes").registerCoreRoutes(app, {
+    loadConsoleDeckConfig
 });
 
-app.get("/consoledeck", (req, res) => {
-    const cfg = loadConsoleDeckConfig();
-    res.render("consoledeck", {
-        apps: cfg.apps || [],
-        selectedAppId: cfg.selectedAppId || null
-    });
+require("./routes/spotify-routes").registerSpotifyRoutes(app, {
+    getValidToken,
+    axios
 });
 
-app.get("/spotify", async (req, res) => {
-    const view = req.query.view;
-
-    if (view === "nowplaying") {
-        return res.render("spotify-nowplaying");
-    }
-    else if (view === "likedplaylist") {
-        const token = await getValidToken();
-
-        if (!token) {
-            return res.render("spotify-liked-playlist", {
-                tracks: [],
-                notLoggedIn: true,
-                error: null,
-                initialOffset: 0,
-                total: 0,
-            });
-        }
-
-        try {
-            const limit = 50;
-            const r = await axios.get("https://api.spotify.com/v1/me/tracks", {
-                headers: { Authorization: `Bearer ${token}` },
-                params: { limit, offset: 0 },
-            });
-
-            const items = r.data.items || [];
-            const total = r.data.total || items.length;
-
-            return res.render("spotify-liked-playlist", {
-                tracks: items,
-                notLoggedIn: false,
-                error: null,
-                initialOffset: limit,
-                total,
-            });
-        } catch (e) {
-            console.log("Liked tracks error:", e.response?.data || e.message);
-
-            return res.render("spotify-liked-playlist", {
-                tracks: [],
-                notLoggedIn: false,
-                error: "Kon je liked nummers niet ophalen.",
-                initialOffset: 0,
-                total: 0,
-            });
-        }
-    }
-    else if (view === "recent") {
-        const token = await getValidToken();
-
-        if (!token) {
-            return res.render("spotify-recent", {
-                tracks: [],
-                notLoggedIn: true,
-                error: null,
-                initialBefore: null,
-                hasMore: false,
-            });
-        }
-
-        try {
-            const limit = 50;
-            const r = await axios.get(
-                "https://api.spotify.com/v1/me/player/recently-played",
-                {
-                    headers: { Authorization: `Bearer ${token}` },
-                    params: { limit }
-                }
-            );
-
-            const items = r.data.items || [];
-            const cursors = r.data.cursors || {};
-
-            return res.render("spotify-recent", {
-                tracks: items,
-                notLoggedIn: false,
-                error: null,
-                initialBefore: cursors.before || null,
-                hasMore: items.length === limit
-            });
-        } catch (e) {
-            console.log("Recently played error:", e.response?.data || e.message);
-
-            return res.render("spotify-recent", {
-                tracks: [],
-                notLoggedIn: false,
-                error: "Kon je recent afgespeelde nummers niet ophalen.",
-                initialBefore: null,
-                hasMore: false,
-            });
-        }
-    }
-    else if (view === "playlists") {
-        const token = await getValidToken();
-
-        if (!token) {
-            return res.render("spotify-playlists", {
-                playlists: [],
-                notLoggedIn: true,
-                error: null,
-                initialOffset: 0,
-                total: 0,
-            });
-        }
-
-        try {
-            const limit = 50;
-            const r = await axios.get("https://api.spotify.com/v1/me/playlists", {
-                headers: { Authorization: `Bearer ${token}` },
-                params: { limit, offset: 0 },
-            });
-
-            const items = r.data.items || [];
-            const total = r.data.total || items.length;
-
-            return res.render("spotify-playlists", {
-                playlists: items,
-                notLoggedIn: false,
-                error: null,
-                initialOffset: limit,
-                total,
-            });
-        } catch (e) {
-            console.log("Playlists error:", e.response?.data || e.message);
-
-            return res.render("spotify-playlists", {
-                playlists: [],
-                notLoggedIn: false,
-                error: "Kon je playlists niet ophalen.",
-                initialOffset: 0,
-                total: 0,
-            });
-        }
-    }
-
-    // default dashboard
-    res.render("spotify-dashboard");
+require("./routes/settings-routes").registerSettingsRoutes(app, {
+    fs,
+    DEVICE_CONFIG_FILE,
+    hasInternet,
+    HOST_IP,
+    currentFirmware
 });
 
-app.get("/weather", (req, res) => {
-    res.render("weather");
-});
-
-app.get("/clock", (req, res) => {
-    res.render("clock");
-});
-
-app.get("/pictureframe", (req, res) => {
-    res.render("pictureframe");
-});
-
-app.get("/settings", (req, res) => {
-    res.render("settings");
-});
-
-// ===== API: FIRMWARE =====
-app.get("/api/firmware", async (req, res) => {
-    const info = await checkFirmwareUpdate();
-    res.json(info);
-});
-
-// ===== API: APP STATE =====
-app.get("/api/state", (req, res) => {
-    res.json({ loggedIn: fs.existsSync(TOKEN_FILE) });
-});
-
-// ===== API: QR LOGIN URL =====
-app.get("/api/qr", async (req, res) => {
-    const scopes = [
-        "user-read-playback-state",
-        "user-modify-playback-state",
-        "user-read-currently-playing",
-        "user-library-read",
-        "user-library-modify",
-        "user-read-recently-played",
-        "playlist-read-private",
-        "playlist-read-collaborative"
-    ].join(" ");
-
-    const params = querystring.stringify({
-        client_id: CLIENT_ID,
-        response_type: "code",
-        redirect_uri: REDIRECT_URI,
-        scope: scopes,
-    });
-
-    const authUrl = `https://accounts.spotify.com/authorize?${params}`;
-    const qr = await QRCode.toDataURL(authUrl);
-
-    res.json({ qr, url: authUrl });
-});
-
-// ===== API: SPOTIFY GET USER PLAYLISTS =====
-app.get("/api/playlists", async (req, res) => {
-    const token = await getValidToken();
-    if (!token) {
-        return res.status(401).json({ error: "Not logged in" });
-    }
-
-    const limit = 50;
-    const offset = Number(req.query.offset) || 0;
-
-    try {
-        const r = await axios.get("https://api.spotify.com/v1/me/playlists", {
-            headers: { Authorization: `Bearer ${token}` },
-            params: { limit, offset },
-        });
-
-        res.json({
-            items: r.data.items || [],
-            total: r.data.total || 0,
-            nextOffset: offset + limit,
-            hasMore: (offset + limit) < (r.data.total || 0),
-        });
-    } catch (e) {
-        console.log("Playlists API error:", e.response?.data || e.message);
-        res.status(500).json({ error: "Failed to fetch playlists" });
-    }
-});
-
-// ===== API: SPOTIFY PLAY PLAYLIST =====
-app.get("/api/play-playlist", async (req, res) => {
-    const token = await getValidToken();
-    if (!token) return res.status(401).send("Not logged in");
-
-    const id = req.query.playlist;
-    if (!id) return res.status(400).send("Missing playlist id");
-
-    try {
-        await axios.put(
-            "https://api.spotify.com/v1/me/player/play",
-            {
-                context_uri: `spotify:playlist:${id}`,
-            },
-            {
-                headers: { Authorization: `Bearer ${token}` },
-            }
-        );
-
-        res.send("OK");
-    } catch (err) {
-        console.log("Play playlist error:", err.response?.data || err.message);
-        res.status(500).send("Error playing playlist");
-    }
-});
-
-// ===== API: SPOTIFY PLAY TRACK =====
-app.get("/api/play-track", async (req, res) => {
-    const token = await getValidToken();
-    if (!token) return res.status(401).send("Not logged in");
-
-    const id = req.query.track;
-    if (!id) return res.status(400).send("Missing track id");
-
-    try {
-        await axios.put(
-            "https://api.spotify.com/v1/me/player/play",
-            {
-                uris: [`spotify:track:${id}`],
-            },
-            {
-                headers: { Authorization: `Bearer ${token}` },
-            }
-        );
-
-        res.send("OK");
-    } catch (err) {
-        console.log("Play track error:", err.response?.data || err.message);
-        res.status(500).send("Error playing track");
-    }
-});
-
-// ===== API: SPOTIFY GET LIKED SONGS =====
-app.get("/api/liked", async (req, res) => {
-    const token = await getValidToken();
-    if (!token) {
-        return res.status(401).json({ error: "Not logged in" });
-    }
-
-    const limit = 50; // Spotify max
-    const offset = Number(req.query.offset) || 0;
-
-    try {
-        const r = await axios.get("https://api.spotify.com/v1/me/tracks", {
-            headers: { Authorization: `Bearer ${token}` },
-            params: { limit, offset },
-        });
-
-        res.json({
-            items: r.data.items || [],
-            total: r.data.total || 0,
-            nextOffset: offset + limit,
-            hasMore: (offset + limit) < (r.data.total || 0),
-        });
-    } catch (e) {
-        console.log("Liked tracks API error:", e.response?.data || e.message);
-        res.status(500).json({ error: "Failed to fetch liked tracks" });
-    }
-});
-
-// ===== API: SPOTIFY GET RECENTLY PLAYED =====
-app.get("/api/recent", async (req, res) => {
-    const token = await getValidToken();
-    if (!token) {
-        return res.status(401).json({ error: "Not logged in" });
-    }
-
-    const limit = 50; // Spotify max
-    const before = req.query.before || undefined;
-
-    try {
-        const r = await axios.get(
-            "https://api.spotify.com/v1/me/player/recently-played",
-            {
-                headers: { Authorization: `Bearer ${token}` },
-                params: { limit, before }
-            }
-        );
-
-        const items = r.data.items || [];
-        const cursors = r.data.cursors || {};
-
-        res.json({
-            items,
-            nextBefore: cursors.before || null,
-            hasMore: items.length === limit && !!cursors.before,
-        });
-    } catch (e) {
-        console.log("Recently played API error:", e.response?.data || e.message);
-        res.status(500).json({ error: "Failed to fetch recently played tracks" });
-    }
-});
-
-// ===== API: SPOTIFY CALLBACK =====
-app.get("/callback", async (req, res) => {
-    const code = req.query.code;
-    if (!code) return res.send("No code received!");
-
-    const authHeader =
-        "Basic " + Buffer.from(`${CLIENT_ID}:${CLIENT_SECRET}`).toString("base64");
-
-    try {
-        const response = await axios.post(
-            "https://accounts.spotify.com/api/token",
-            querystring.stringify({
-                grant_type: "authorization_code",
-                code,
-                redirect_uri: REDIRECT_URI,
-            }),
-            {
-                headers: {
-                    "Content-Type": "application/x-www-form-urlencoded",
-                    Authorization: authHeader,
-                },
-            }
-        );
-
-        const tokens = {
-            access_token: response.data.access_token,
-            refresh_token: response.data.refresh_token,
-            expires_in: response.data.expires_in,
-            scope: response.data.scope,
-            token_type: response.data.token_type,
-            created_at: Date.now(),
-        };
-
-        fs.writeFileSync(TOKEN_FILE, JSON.stringify(tokens, null, 2));
-        console.log("✔ Saved new spotify_token.json");
-
-        res.send("<h1>Login OK ✔ You can close this tab</h1>");
-    } catch (err) {
-        console.log("Callback error:", err.response?.data || err.message);
-        res.send("Error");
-    }
-});
-
-// ===== API: VOLUME CONTROL =====
-app.get("/api/volume", async (req, res) => {
-    const token = await getValidToken();
-    if (!token) return res.status(401).send("Not logged in");
-
-    const raw = req.query.percent;
-    const percent = Number(raw);
-
-    if (Number.isNaN(percent) || percent < 0 || percent > 100) {
-        return res.status(400).send("Invalid volume percent");
-    }
-
-    try {
-        await axios.put(
-            `https://api.spotify.com/v1/me/player/volume?volume_percent=${Math.round(percent)}`,
-            null,
-            { headers: { Authorization: `Bearer ${token}` } }
-        );
-
-        res.send("OK");
-    } catch (err) {
-        console.log("Volume error:", err.response?.data || err.message);
-        res.status(500).send("Error setting volume");
-    }
-});
-
-// ===== API: PLAYBACK STATUS =====
-app.get("/api/playback", async (req, res) => {
-    const token = await getValidToken();
-    if (!token) return res.json({});
-
-    try {
-        const r = await axios.get("https://api.spotify.com/v1/me/player", {
-            headers: { Authorization: `Bearer ${token}` },
-        });
-
-        const data = r.data;
-        if (!data) return res.json({});
-
-        // Episode but no item
-        if (!data.item && data.currently_playing_type === "episode") {
-            return res.json({
-                track: "Podcast episode playing",
-                artist: "Spotify does not provide episode metadata",
-                cover: "",
-                duration: 0,
-                progress: 0,
-                liked: false,
-                id: null,
-                isPlaying: !!data.is_playing,
-                type: "episode",
-                volume: typeof data.device?.volume_percent === "number"
-                    ? data.device.volume_percent
-                    : null,
-            });
-        }
-
-        if (!data.item) return res.json({});
-
-        // Normal track/episode
-        const item = data.item;
-
-        let title = item.name || "";
-        let subtitle = "";
-        let cover = "";
-
-        if (item.type === "track") {
-            subtitle = item.artists.map((a) => a.name).join(", ");
-            cover = item.album?.images?.[0]?.url || "";
-        } else if (item.type === "episode") {
-            subtitle = item.show?.name || "Podcast";
-            cover =
-                item.images?.[0]?.url ||
-                item.show?.images?.[0]?.url ||
-                "";
-        }
-
-        let liked = false;
-
-        if (item.type === "track") {
-            try {
-                const resLike = await axios.get(
-                    `https://api.spotify.com/v1/me/tracks/contains?ids=${item.id}`,
-                    { headers: { Authorization: `Bearer ${token}` } }
-                );
-                liked = resLike.data[0];
-            } catch { }
-        }
-
-        res.json({
-            track: title,
-            artist: subtitle,
-            cover,
-            duration: item.duration_ms || 0,
-            progress: data.progress_ms || 0,
-            liked,
-            id: item.id,
-            isPlaying: !!data.is_playing,
-            type: item.type,
-            volume: typeof data.device?.volume_percent === "number"
-                ? data.device.volume_percent
-                : null,
-        });
-
-    } catch (e) {
-        console.log("Playback error:", e.response?.data || e.message);
-        res.json({});
-    }
-});
-
-// ===== API: PLAYER CONTROLS =====
-app.get("/api/playpause", async (req, res) => {
-    const token = await getValidToken();
-    if (!token) return res.send("Not logged in");
-
-    try {
-        const playback = await axios.get(
-            "https://api.spotify.com/v1/me/player",
-            { headers: { Authorization: `Bearer ${token}` } }
-        );
-
-        if (playback.data?.is_playing) {
-            await axios.put(
-                "https://api.spotify.com/v1/me/player/pause",
-                {},
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
-        } else {
-            await axios.put(
-                "https://api.spotify.com/v1/me/player/play",
-                {},
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
-        }
-
-        res.send("OK");
-    } catch (err) {
-        console.log("Play/pause error:", err.response?.data || err.message);
-        res.send("Error");
-    }
-});
-
-app.get("/api/next", async (req, res) => {
-    const token = await getValidToken();
-    if (!token) return res.send("Not logged in");
-
-    await axios
-        .post("https://api.spotify.com/v1/me/player/next", {}, {
-            headers: { Authorization: `Bearer ${token}` },
-        })
-        .catch(() => { });
-
-    res.send("OK");
-});
-
-app.get("/api/prev", async (req, res) => {
-    const token = await getValidToken();
-    if (!token) return res.send("Not logged in");
-
-    await axios
-        .post("https://api.spotify.com/v1/me/player/previous", {}, {
-            headers: { Authorization: `Bearer ${token}` },
-        })
-        .catch(() => { });
-
-    res.send("OK");
-});
-
-app.get("/api/seek", async (req, res) => {
-    const token = await getValidToken();
-    if (!token) return res.send("Not logged in");
-
-    const position = parseInt(req.query.position, 10);
-
-    await axios
-        .put(
-            `https://api.spotify.com/v1/me/player/seek?position_ms=${position}`,
-            {},
-            { headers: { Authorization: `Bearer ${token}` } }
-        )
-        .catch(() => { });
-
-    res.send("OK");
-});
-
-app.get("/api/like", async (req, res) => {
-    const token = await getValidToken();
-    if (!token) return res.send("Not logged in");
-
-    const id = req.query.track;
-
-    await axios
-        .put(
-            `https://api.spotify.com/v1/me/tracks?ids=${id}`,
-            {},
-            { headers: { Authorization: `Bearer ${token}` } }
-        )
-        .catch(() => { });
-
-    res.send("OK");
-});
-
-app.get("/api/unlike", async (req, res) => {
-    const token = await getValidToken();
-    if (!token) return res.send("Not logged in");
-
-    const id = req.query.track;
-
-    await axios
-        .delete(`https://api.spotify.com/v1/me/tracks?ids=${id}`, {
-            headers: { Authorization: `Bearer ${token}` },
-        })
-        .catch(() => { });
-
-    res.send("OK");
-});
-
-app.get("/api/device-config", async (req, res) => {
-    try {
-        // TODO: fix time get on start
-        const cfg = await JSON.parse(fs.readFileSync(DEVICE_CONFIG_FILE, "utf8"));
-        res.json({ time24: cfg.time_format_24h !== false }); // default = 24h
-    } catch (e) {
-        res.json({ time24: true }); // fallback
-    }
+// ===== API =====
+require("./routes/api-routes").registerApiRoutes(app, {
+    checkFirmwareUpdate,
+    TOKEN_FILE,
+    QRCode,
+    CLIENT_ID,
+    CLIENT_SECRET,
+    REDIRECT_URI,
+    getValidToken,
+    axios,
+    querystring,
+    fs,
+    DEVICE_CONFIG_FILE,
+    loadConsoleDeckConfig,
+    exec,
+    getLocationFromConfig,
+    mapWeatherCode
 });
 
 // ===== ADMIN APP SETUP =====
-const adminApp = express();
-
-adminApp.set("view engine", "ejs");
-adminApp.set("views", path.join(__dirname, "admin_views"));
-
-adminApp.use(express.json());
-adminApp.use(express.urlencoded({ extended: true }));
-adminApp.use(express.static(path.join(__dirname, "admin_public")));
-
-adminApp.get("/", (req, res) => {
-    const cfg = loadConsoleDeckConfig();
-
-    res.render("admin-dashboard", {
-        ip: HOST_IP,
-        port: PORT,
-        wifiConfigured: isWiFiConfigured,
-        config: cfg
-    });
-});
-
-// ===== CONSOLE DECK API (ADMIN) =====
-
-// Volledige config (optioneel, handig voor debug)
-adminApp.get("/api/consoledeck", (req, res) => {
-    const cfg = loadConsoleDeckConfig();
-    res.json(cfg);
-});
-
-// Alleen de geselecteerde app (voor later gebruik)
-adminApp.get("/api/consoledeck/selected", (req, res) => {
-    const cfg = loadConsoleDeckConfig();
-    const selected = cfg.apps.find(a => a.id === cfg.selectedAppId) || null;
-    res.json({ selectedAppId: cfg.selectedAppId, app: selected });
-});
-
-// Nieuwe app toevoegen (gebruik je in admin-dashboard.ejs)
-adminApp.post("/api/consoledeck/apps", (req, res) => {
-    const { name, pcCommand, icon, color, category, showLabel } = req.body;
-
-    if (!name || !pcCommand) {
-        return res.status(400).json({ error: "name en pcCommand zijn verplicht" });
-    }
-
-    const cfg = loadConsoleDeckConfig();
-
-    const id = "app_" + Date.now();
-    const app = {
-        id,
-        name,
-        pcCommand,
-        icon: icon || "",
-        color: color || "",
-        category: category || "",
-        // als showLabel niet is meegestuurd -> standaard true
-        showLabel: showLabel === false || showLabel === "false" ? false : true
-    };
-
-    cfg.apps.push(app);
-    saveConsoleDeckConfig(cfg);
-
-    res.json(app);
-});
-
-// App verwijderen (gebruik je bij delete button)
-adminApp.delete("/api/consoledeck/apps/:id", (req, res) => {
-    const { id } = req.params;
-
-    const cfg = loadConsoleDeckConfig();
-    const index = cfg.apps.findIndex(a => a.id === id);
-
-    if (index === -1) {
-        return res.status(404).json({ error: "App niet gevonden" });
-    }
-
-    const [removed] = cfg.apps.splice(index, 1);
-
-    if (cfg.selectedAppId === id) {
-        cfg.selectedAppId = null;
-    }
-
-    saveConsoleDeckConfig(cfg);
-    res.json({ removed });
-});
-
-// App selecteren (wat later gebruikt zal worden om iets te openen)
-adminApp.post("/api/consoledeck/select", (req, res) => {
-    const { id } = req.body;
-
-    const cfg = loadConsoleDeckConfig();
-
-    // id kan ook null zijn om "niets geselecteerd" te doen
-    if (id !== null) {
-        const app = cfg.apps.find(a => a.id === id);
-        if (!app) {
-            return res.status(404).json({ error: "App niet gevonden" });
-        }
-    }
-
-    cfg.selectedAppId = id;
-    saveConsoleDeckConfig(cfg);
-
-    res.json({ selectedAppId: cfg.selectedAppId });
-});
-
-adminApp.put("/api/consoledeck/apps/:id", (req, res) => {
-    const { id } = req.params;
-    const { name, pcCommand, icon, color, category, showLabel } = req.body;
-
-    const cfg = loadConsoleDeckConfig();
-    const app = cfg.apps.find(a => a.id === id);
-
-    if (!app) {
-        return res.status(404).json({ error: "App niet gevonden" });
-    }
-
-    if (name !== undefined) app.name = name;
-    if (pcCommand !== undefined) app.pcCommand = pcCommand;
-    if (icon !== undefined) app.icon = icon;
-    if (color !== undefined) app.color = color;
-    if (category !== undefined) app.category = category;
-    if (showLabel !== undefined) {
-        app.showLabel = (showLabel === true || showLabel === "true");
-    }
-
-    saveConsoleDeckConfig(cfg);
-    res.json(app);
+const createAdminApp = require("./admin-app");
+const adminApp = createAdminApp({
+    HOST_IP,
+    PORT,
+    isWiFiConfigured,
+    loadConsoleDeckConfig,
+    saveConsoleDeckConfig
 });
 
 // ===== START HTTPS SERVER =====

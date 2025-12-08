@@ -10,6 +10,9 @@
         overflow: hidden;
         font-family: system-ui, sans-serif;
         color: #fff;
+
+        width: 800px;
+        height: 480px;
     }
 
     .tile {
@@ -70,6 +73,7 @@
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -77,13 +81,14 @@
     <!-- TODO: fix the height issue !-->
     <title>Console deck</title>
 </head>
+
 <body>
     <% const slots=[ { cls: "rectangle-37" , left: 50, top: 27 }, { cls: "rectangle-38" , left: 50, top: 177 }, {
-        cls: "rectangle-43" , left: 50, top: 327 }, { cls: "rectangle-39" , left: 223, top: 27 }, { cls: "rectangle-41" ,
-        left: 223, top: 177 }, { cls: "rectangle-42" , left: 223, top: 327 }, { cls: "rectangle-44" , left: 396, top: 27 },
-        { cls: "rectangle-45" , left: 396, top: 177 }, { cls: "rectangle-46" , left: 396, top: 327 }, { cls: "rectangle-50"
-        , left: 569, top: 27 }, { cls: "rectangle-48" , left: 569, top: 177 }, { cls: "rectangle-49" , left: 569, top: 327 }
-        ]; const list=Array.isArray(apps) ? apps.slice(0, 12) : []; %>
+        cls: "rectangle-43" , left: 50, top: 327 }, { cls: "rectangle-39" , left: 223, top: 27 }, { cls: "rectangle-41"
+        , left: 223, top: 177 }, { cls: "rectangle-42" , left: 223, top: 327 }, { cls: "rectangle-44" , left: 396, top:
+        27 }, { cls: "rectangle-45" , left: 396, top: 177 }, { cls: "rectangle-46" , left: 396, top: 327 }, {
+        cls: "rectangle-50" , left: 569, top: 27 }, { cls: "rectangle-48" , left: 569, top: 177 }, { cls: "rectangle-49"
+        , left: 569, top: 327 } ]; const list=Array.isArray(apps) ? apps.slice(0, 12) : []; %>
 
         <div class="console-deck-console" id="consoleDeck">
 
@@ -112,29 +117,48 @@
                 <% }) %>
 
 
-                <!-- Back button -->
-                <img class="turn-back" src="/spotify/img/turn-back.png" onclick="history.back()">
-    </div>
+                    <!-- Back button -->
+                    <img class="turn-back" src="/spotify/img/turn-back.png" onclick="history.back()">
+        </div>
 
-    <script>
-        const deck = document.getElementById('consoleDeck');
+        <script>
+            const deck = document.getElementById('consoleDeck');
 
-        deck.addEventListener('click', (e) => {
-            const tile = e.target.closest('.tile');
-            if (!tile) return;
+            deck.addEventListener('click', async (e) => {
+                const tile = e.target.closest('.tile');
+                if (!tile) return;
 
-            const appId = tile.dataset.appId;
-            if (!appId) return;
+                const appId = tile.dataset.appId;
+                if (!appId) return;
 
-            console.log("Clicked app:", appId);
+                console.log("Clicked app:", appId);
 
-            // Select visual
-            document.querySelectorAll('.tile').forEach(t => t.classList.remove('selected'));
-            tile.classList.add('selected');
+                // Visueel selecteren
+                document.querySelectorAll('.tile').forEach(t => t.classList.remove('selected'));
+                tile.classList.add('selected');
 
-            // (later) open/select API call
-            // fetch('/api/consoledeck/select', { ... })
-        });
-    </script>
+                // API CALL naar de Pi om het programma te starten
+                try {
+                    const res = await fetch('/api/consoledeck/run', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ id: appId })
+                    });
+
+                    const data = await res.json().catch(() => ({}));
+
+                    if (!res.ok) {
+                        alert('Fout bij starten: ' + (data.error || 'unknown'));
+                    } else {
+                        console.log('App gestart:', data);
+                    }
+                } catch (err) {
+                    console.error(err);
+                    alert('Onbekende fout bij starten');
+                }
+            });
+
+        </script>
 </body>
+
 </html>

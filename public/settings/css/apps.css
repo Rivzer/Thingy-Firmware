@@ -1,0 +1,177 @@
+.settings-app-settings,
+.settings-app-settings * {
+  box-sizing: border-box;
+}
+.settings-app-settings {
+  background: #202125;
+  height: 480px;
+  position: relative;
+  overflow: hidden;
+}
+.turn-back-1-1 {
+  width: 48px;
+  height: 48px;
+  position: absolute;
+  left: 27px;
+  top: 23px;
+  object-fit: cover;
+  aspect-ratio: 1;
+}
+.app-settings {
+  color: #ffffff;
+  text-align: left;
+  font-family: "Poppins-Bold", sans-serif;
+  font-size: 40px;
+  font-weight: 700;
+  position: absolute;
+  left: 269px;
+  top: 17px;
+}
+.group-46 {
+  position: absolute;
+  inset: 0;
+}
+.picture-frame {
+  color: #9fa2a7;
+  text-align: center;
+  font-family: "Poppins-Bold", sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  position: absolute;
+  left: 420px;
+  top: 320px;
+}
+.group-19 {
+  width: 142px;
+  height: 142px;
+  position: static;
+}
+.ellipse-2 {
+  background: #816a2d;
+  border-radius: 50%;
+  width: 142px;
+  height: 142px;
+  position: absolute;
+  left: 422px;
+  top: 169px;
+}
+.imageedit-7-8892221508-1 {
+  width: 80px;
+  height: 80px;
+  position: absolute;
+  left: 453px;
+  top: 200px;
+  object-fit: cover;
+  aspect-ratio: 1;
+}
+.group-45 {
+  position: absolute;
+  inset: 0;
+}
+.clock {
+  color: #9fa2a7;
+  text-align: center;
+  font-family: "Poppins-Bold", sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  position: absolute;
+  left: 279px;
+  top: 320px;
+}
+.group-21 {
+  width: 142px;
+  height: 142px;
+  position: static;
+}
+.ellipse-22 {
+  background: #774443;
+  border-radius: 50%;
+  width: 142px;
+  height: 142px;
+  position: absolute;
+  left: 238px;
+  top: 169px;
+}
+.imageedit-3-4829322221-1 {
+  width: 80px;
+  height: 80px;
+  position: absolute;
+  left: 269px;
+  top: 200px;
+  object-fit: cover;
+  aspect-ratio: 1;
+}
+.group-44 {
+  position: absolute;
+  inset: 0;
+}
+.console-deck {
+  color: #9fa2a7;
+  text-align: center;
+  font-family: "Poppins-Bold", sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  position: absolute;
+  left: 56px;
+  top: 320px;
+}
+.group-18 {
+  width: 142px;
+  height: 142px;
+  position: static;
+}
+.ellipse-23 {
+  background: #63447f;
+  border-radius: 50%;
+  width: 142px;
+  height: 142px;
+  position: absolute;
+  left: 56px;
+  top: 169px;
+}
+.imageedit-2-6218725443-1 {
+  width: 80px;
+  height: 80px;
+  position: absolute;
+  left: 86px;
+  top: 200px;
+  object-fit: cover;
+  aspect-ratio: 1;
+}
+.group-51 {
+  position: absolute;
+  inset: 0;
+}
+.weather {
+  color: #9fa2a7;
+  text-align: center;
+  font-family: "Poppins-Bold", sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  position: absolute;
+  left: 629px;
+  top: 320px;
+}
+.group-17 {
+  width: 142px;
+  height: 142px;
+  position: static;
+}
+.ellipse-24 {
+  background: #376467;
+  border-radius: 50%;
+  width: 142px;
+  height: 142px;
+  position: absolute;
+  left: 604px;
+  top: 169px;
+}
+.imageedit-6-7326754813-1 {
+  width: 80px;
+  height: 80px;
+  position: absolute;
+  left: 635px;
+  top: 200px;
+  object-fit: cover;
+  aspect-ratio: 1;
+}

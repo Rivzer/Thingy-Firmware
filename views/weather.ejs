@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/global.css">
+    <link rel="stylesheet" href="/weather/css/style.css">
+    <title>Weather</title>
+</head>
+
+<body>
+    <div class="weather-screen">
+        <img onclick="history.back()" class="back-button" src="/spotify/img/turn-back.png">
+
+        <div class="weather-title">Weather</div>
+
+        <div class="weather-card">
+            <div class="weather-location" id="weatherLocation">Loading...</div>
+            <div class="weather-temp" id="weatherTemp">--°C</div>
+            <div class="weather-condition" id="weatherCondition"></div>
+            <div class="weather-meta" id="weatherMeta"></div>
+        </div>
+    </div>
+
+    <script>
+        async function loadWeather() {
+            const locEl = document.getElementById("weatherLocation");
+            const tempEl = document.getElementById("weatherTemp");
+            const condEl = document.getElementById("weatherCondition");
+            const metaEl = document.getElementById("weatherMeta");
+
+            try {
+                const res = await fetch("/api/weather");
+                if (!res.ok) throw new Error("HTTP " + res.status);
+
+                const data = await res.json();
+                if (data.error) throw new Error(data.error);
+
+                const loc = data.location;
+                const cur = data.current;
+
+                locEl.textContent = `${loc.city}, ${loc.country}`;
+                tempEl.textContent = `${cur.temp.toFixed(1)}°C`;
+                condEl.textContent = `${(cur.icon || "")} ${(cur.condition || "")}`.trim();
+                metaEl.textContent = `Wind: ${cur.wind} km/h • Code: ${cur.code}`;
+            } catch (e) {
+                console.error("Weather load failed:", e);
+                locEl.textContent = "Error loading weather";
+                tempEl.textContent = "--°C";
+                condEl.textContent = "";
+                metaEl.textContent = "";
+            }
+        }
+
+        loadWeather();
+    </script>
+
+</body>
+
+</html>

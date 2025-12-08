@@ -1,0 +1,75 @@
+.settings-device-information,
+.settings-device-information * {
+  box-sizing: border-box;
+}
+
+.settings-device-information {
+  background: #202125;
+  height: 480px;
+  position: relative;
+  overflow: hidden;
+  font-family: "Poppins", system-ui, sans-serif;
+}
+
+/* Titel bovenaan */
+.device-information-title {
+  color: #ffffff;
+  text-align: center;
+  font-family: "Poppins-Bold", sans-serif;
+  font-size: 32px;
+  font-weight: 700;
+  position: absolute;
+  left: 50%;
+  top: 20px;
+  transform: translateX(-50%);
+}
+/* Container voor alle info-rijen */
+.info-list {
+  position: absolute;
+  left: 50%;
+  top: 110px;
+  transform: translateX(-50%);
+  width: 371px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Eén grijze kadertje-rij */
+.info-row {
+  background: #404957;
+  border-radius: 10px;
+  height: 42px;
+  display: flex;
+  align-items: center;         /* verticaal centreren */
+  padding: 0 16px;
+  color: #ffffff;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+/* Bovenste device-name rij: tekst in het midden */
+.device-name-row {
+  justify-content: center;
+}
+
+/* Label links */
+.info-label {
+  flex: 0 0 auto;
+}
+
+/* Waarde rechts, mooi uitgelijnd */
+.info-value {
+  margin-left: auto;
+  text-align: right;
+  max-width: 60%;
+}
+
+/* Online/offline kleur */
+.status-ok {
+  color: #4caf50;   /* groen */
+}
+
+.status-bad {
+  color: #e53935;   /* rood */
+}
