@@ -399,11 +399,19 @@ app.use(express.static("public"));
 console.log("🔍 Device IP:", HOST_IP);
 
 // ===== WIFI FIRST-RUN MIDDLEWARE =====
-app.use((req, res, next) => {
-    if (isWiFiConfigured) return next();
-    if (req.path.startsWith("/wifi-setup")) return next();
-    return res.redirect("/wifi-setup");
-});
+// app.use((req, res, next) => {
+//     if (isWiFiConfigured) return next();
+
+//     if (
+//         req.path.startsWith("/wifi-setup") ||
+//         req.path.startsWith("/api/setupwifi-qr") ||
+//         req.path.startsWith("/api/save-wifi")
+//     ) {
+//         return next();
+//     }
+
+//     return res.redirect("/wifi-setup");
+// });
 
 // ===== ROUTES =====
 require("./routes/wifi-routes").registerWifiRoutes(app, {
@@ -449,7 +457,8 @@ require("./routes/api-routes").registerApiRoutes(app, {
     exec,
     getLocationFromConfig,
     mapWeatherCode,
-    autoDetectLocationFromIP
+    autoDetectLocationFromIP,
+    HOST_IP
 });
 
 // ===== ADMIN APP SETUP =====
@@ -459,7 +468,8 @@ const adminApp = createAdminApp({
     PORT,
     isWiFiConfigured,
     loadConsoleDeckConfig,
-    saveConsoleDeckConfig
+    saveConsoleDeckConfig,
+    DEVICE_CONFIG_FILE
 });
 
 // ===== START HTTPS SERVER =====

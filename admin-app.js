@@ -1,13 +1,15 @@
-// admin-app.js
 const express = require("express");
 const path = require("path");
+const fs = require("fs");
+const { exec } = require("child_process");
 
 module.exports = function createAdminApp({
     HOST_IP,
     PORT,
     isWiFiConfigured,
     loadConsoleDeckConfig,
-    saveConsoleDeckConfig
+    saveConsoleDeckConfig,
+    DEVICE_CONFIG_FILE
 }) {
     const adminApp = express();
 
@@ -18,7 +20,6 @@ module.exports = function createAdminApp({
     adminApp.use(express.urlencoded({ extended: true }));
     adminApp.use(express.static(path.join(__dirname, "admin_public")));
 
-    // Dashboard
     adminApp.get("/", (req, res) => {
         const cfg = loadConsoleDeckConfig();
 
@@ -30,20 +31,21 @@ module.exports = function createAdminApp({
         });
     });
 
-    // Volledige config (optioneel, handig voor debug)
+    adminApp.get("/setupwifi", (req, res) => {
+        res.render("setupwifi");
+    });
+
     adminApp.get("/api/consoledeck", (req, res) => {
         const cfg = loadConsoleDeckConfig();
         res.json(cfg);
     });
 
-    // Alleen de geselecteerde app (voor later gebruik)
     adminApp.get("/api/consoledeck/selected", (req, res) => {
         const cfg = loadConsoleDeckConfig();
         const selected = cfg.apps.find(a => a.id === cfg.selectedAppId) || null;
         res.json({ selectedAppId: cfg.selectedAppId, app: selected });
     });
 
-    // Nieuwe app toevoegen
     adminApp.post("/api/consoledeck/apps", (req, res) => {
         const { name, pcCommand, icon, color, category, showLabel } = req.body;
 
@@ -61,7 +63,7 @@ module.exports = function createAdminApp({
             icon: icon || "",
             color: color || "",
             category: category || "",
-            // als showLabel niet is meegestuurd -> standaard true
+
             showLabel: showLabel === false || showLabel === "false" ? false : true
         };
 
@@ -71,7 +73,6 @@ module.exports = function createAdminApp({
         res.json(app);
     });
 
-    // App verwijderen
     adminApp.delete("/api/consoledeck/apps/:id", (req, res) => {
         const { id } = req.params;
 
@@ -92,13 +93,11 @@ module.exports = function createAdminApp({
         res.json({ removed });
     });
 
-    // App selecteren
     adminApp.post("/api/consoledeck/select", (req, res) => {
         const { id } = req.body;
 
         const cfg = loadConsoleDeckConfig();
 
-        // id kan ook null zijn om "niets geselecteerd" te doen
         if (id !== null) {
             const app = cfg.apps.find(a => a.id === id);
             if (!app) {
@@ -112,7 +111,6 @@ module.exports = function createAdminApp({
         res.json({ selectedAppId: cfg.selectedAppId });
     });
 
-    // App bewerken
     adminApp.put("/api/consoledeck/apps/:id", (req, res) => {
         const { id } = req.params;
         const { name, pcCommand, icon, color, category, showLabel } = req.body;
@@ -135,6 +133,28 @@ module.exports = function createAdminApp({
 
         saveConsoleDeckConfig(cfg);
         res.json(app);
+    });
+
+    adminApp.post("/api/save-wifi", (req, res) => {
+        const { ssid, password } = req.body;
+
+        if (!ssid) return res.json({ ok: false, error: "SSID is required" });
+
+        try {
+            const cfg = JSON.parse(fs.readFileSync(DEVICE_CONFIG_FILE, "utf8"));
+
+            cfg.ap.ssid = ssid;
+            cfg.ap.password = password;
+            cfg.wifiConfigured = true;
+
+            fs.writeFileSync(DEVICE_CONFIG_FILE, JSON.stringify(cfg, null, 2));
+
+            exec("sudo reboot", () => { });
+
+            res.json({ ok: true, rebooting: true });
+        } catch (err) {
+            res.json({ ok: false, error: "Could not save WiFi" });
+        }
     });
 
     return adminApp;

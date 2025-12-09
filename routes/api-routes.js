@@ -16,7 +16,8 @@ function registerApiRoutes(app, deps) {
         exec,
         getLocationFromConfig,
         mapWeatherCode,
-        autoDetectLocationFromIP
+        autoDetectLocationFromIP,
+        HOST_IP
     } = deps;
 
     // ===== API: FIRMWARE =====
@@ -603,6 +604,27 @@ function registerApiRoutes(app, deps) {
         }
     });
 
+    // ===== API: WIFI SETUP QR =====
+    app.get("/api/setupwifi-qr", async (req, res) => {
+        try {
+            const url = `http://${HOST_IP}:8889/setupwifi`;
+
+            const qr = await QRCode.toDataURL(url);
+
+            return res.json({
+                ok: true,
+                qr,
+                url
+            });
+
+        } catch (err) {
+            console.error("QR generation error:", err);
+            return res.status(500).json({
+                ok: false,
+                error: "Failed to generate QR code"
+            });
+        }
+    });
 }
 
 module.exports = { registerApiRoutes };

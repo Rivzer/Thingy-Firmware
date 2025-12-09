@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/global.css">
+    <style>
+        .wi-fi,
+        .wi-fi * {
+            box-sizing: border-box;
+        }
+
+        .wi-fi {
+            background: #f9f9f9;
+            height: 480px;
+            width: 800px; /* als je 480x800 gebruikt op je scherm */
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Container waar de QR in komt */
+        #qr-box {
+            position: absolute;
+            left: 267px;
+            top: 91px;
+            width: 266px;
+            height: 266px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .qr-img {
+            width: 266px;
+            height: 266px;
+            border-radius: 12px;
+        }
+
+        .qr-error {
+            font-size: 14px;
+            color: #ff4444;
+            text-align: center;
+        }
+
+        .qr-loading {
+            font-size: 14px;
+            color: #666;
+            text-align: center;
+        }
+
+        .group-1 {
+            width: 230px;
+            height: 39px;
+            position: static;
+        }
+
+        .rectangle-1 {
+            background: #2a78f8;
+            border-radius: 10px;
+            width: 230px;
+            height: 39px;
+            position: absolute;
+            left: 285px;
+            top: 380px;
+        }
+
+        .scan-to-connect-to-wi-fi {
+            color: #ffffff;
+            text-align: center;
+            font-family: "PtSansCaption-Regular", sans-serif;
+            font-size: 14px;
+            font-weight: 400;
+            position: absolute;
+            left: 337px;
+            top: 391px;
+        }
+
+        .wifi-signal-1 {
+            width: 26px;
+            height: 26px;
+            position: absolute;
+            left: 299px;
+            top: 387px;
+            object-fit: cover;
+            aspect-ratio: 1;
+        }
+
+        .thingy {
+            color: #2a78f8;
+            text-align: center;
+            font-family: "Poppins-Bold", sans-serif;
+            font-size: 40px;
+            font-weight: 700;
+            position: absolute;
+            left: 333px;
+            top: 24px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="wi-fi">
+        <div id="qr-box" class="qr-loading">Loading…</div>
+
+        <div class="group-1">
+            <div class="rectangle-1"></div>
+            <div class="scan-to-connect-to-wi-fi">Scan to connect to WiFi</div>
+            <img class="wifi-signal-1" src="/setup/img/wifi-signal.png" />
+        </div>
+        <div class="thingy">Thingy</div>
+    </div>
+
+    <script>
+        async function loadQR() {
+            const box = document.getElementById("qr-box");
+            box.innerHTML = "<div class='qr-loading'>Loading…</div>";
+
+            try {
+                const res = await fetch("/api/setupwifi-qr");
+                const data = await res.json();
+
+                if (!data.ok || !data.qr) {
+                    throw new Error("QR failed");
+                }
+
+                box.innerHTML = `
+                    <img src="${data.qr}" class="qr-img" alt="WiFi setup QR">
+                `;
+            } catch (err) {
+                console.error(err);
+                box.innerHTML = "<div class='qr-error'>Failed to load QR code.</div>";
+            }
+        }
+
+        loadQR();
+    </script>
+
+</body>
+
+</html>

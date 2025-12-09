@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Thingy WiFi Setup</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+
+        .box {
+            background: white;
+            padding: 20px;
+            max-width: 400px;
+            margin: auto;
+            border-radius: 12px;
+            box-shadow: 0 0 10px #0002;
+        }
+
+        input,
+        button {
+            width: 100%;
+            margin-top: 12px;
+            padding: 12px;
+            font-size: 18px;
+            box-sizing: border-box;
+        }
+
+        button {
+            background: black;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: default;
+        }
+
+        #msg {
+            margin-top: 12px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="box">
+        <h2>WiFi Setup</h2>
+
+        <label>WiFi Name (SSID)</label>
+        <input id="ssid" autocomplete="off">
+
+        <label>Password</label>
+        <input id="password" type="password" autocomplete="off">
+
+        <!-- HIER: id toegevoegd -->
+        <button id="saveBtn" onclick="save()">Connect</button>
+
+        <p id="msg"></p>
+    </div>
+
+    <script>
+        async function save() {
+            const ssid = document.getElementById("ssid").value.trim();
+            const password = document.getElementById("password").value;
+            const btn = document.getElementById("saveBtn");
+            const msg = document.getElementById("msg");
+
+            if (!ssid) {
+                msg.textContent = "Please enter a WiFi name (SSID).";
+                msg.style.color = "red";
+                return;
+            }
+
+            btn.innerText = "Saving…";
+            btn.disabled = true;
+            msg.textContent = "";
+            
+            try {
+                const res = await fetch("/api/save-wifi", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ ssid, password })
+                });
+
+                const data = await res.json();
+                console.log("save-wifi response:", data);
+
+                if (!data.ok) {
+                    msg.textContent = "Error: " + (data.error || "Unknown error");
+                    msg.style.color = "red";
+                    btn.innerText = "Connect";
+                    btn.disabled = false;
+                    return;
+                }
+
+                // Succes: Pi gaat rebooten
+                btn.innerText = "Rebooting…";
+                msg.textContent = "Saved. The device is rebooting, reconnect in a moment.";
+                msg.style.color = "green";
+
+            } catch (err) {
+                console.error("Save WiFi failed:", err);
+                msg.textContent = "Failed to contact device.";
+                msg.style.color = "red";
+                btn.innerText = "Connect";
+                btn.disabled = false;
+            }
+        }
+    </script>
+
+</body>
+
+</html>
