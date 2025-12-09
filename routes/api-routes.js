@@ -5,6 +5,8 @@ function registerApiRoutes(app, deps) {
     const {
         checkFirmwareUpdate,
         TOKEN_FILE,
+        CONSOLE_DECK_FILE,
+        DEVICE_CONFIG_FILE,
         QRCode,
         CLIENT_ID,
         CLIENT_SECRET,
@@ -13,11 +15,11 @@ function registerApiRoutes(app, deps) {
         axios,
         querystring,
         fs,
-        DEVICE_CONFIG_FILE,
         loadConsoleDeckConfig,
         exec,
         getLocationFromConfig,
-        mapWeatherCode
+        mapWeatherCode,
+        autoDetectLocationFromIP
     } = deps;
 
     // ===== API: FIRMWARE =====
@@ -536,6 +538,87 @@ function registerApiRoutes(app, deps) {
             res.status(500).json({ error: "Failed to load weather" });
         }
     });
+
+    // ===== API: RESET LOCATION (auto-detect via IP) =====
+    app.post("/api/location/reset", async (req, res) => {
+        try {
+            // Locatie opnieuw proberen op te halen via IP
+            await autoDetectLocationFromIP();
+
+            // Nieuwe config inlezen
+            const cfg = JSON.parse(fs.readFileSync(DEVICE_CONFIG_FILE, "utf8"));
+
+            res.json({
+                ok: true,
+                location: cfg.location || null,
+                time_zone: cfg.time_zone || "Europe/Brussels"
+            });
+        } catch (e) {
+            console.error("Location reset error:", e);
+            res.status(500).json({ ok: false, error: "Failed to reset location" });
+        }
+    });
+
+    // ===== API: FACTORY RESET =====
+    app.post("/api/reset", async (req, res) => {
+        try {
+            console.log("⚠️ Factory reset triggered...");
+
+            const filesToRemove = [
+                DEVICE_CONFIG_FILE,
+                TOKEN_FILE,
+                CONSOLE_DECK_FILE
+            ];
+
+            for (const file of filesToRemove) {
+                if (fs.existsSync(file)) {
+                    fs.unlinkSync(file);
+                    console.log("🗑️ Removed", file);
+                }
+            }
+
+            exec("sudo reboot", (err) => {
+                if (err) console.error("❌ Reboot error:", err);
+            });
+
+            res.json({ ok: true, rebooting: true });
+
+        } catch (err) {
+            console.error("❌ Factory reset error:", err);
+            res.status(500).json({ error: "Factory reset failed" });
+        }
+    });
+
+    // ===== API: RESET WIFI =====
+    app.post("/api/reset-wifi", async (req, res) => {
+        try {
+            console.log("⚠️ WiFi reset triggered...");
+
+            let cfg = {};
+            try {
+                cfg = JSON.parse(fs.readFileSync(DEVICE_CONFIG_FILE, "utf8"));
+            } catch {
+                cfg = {};
+            }
+
+            cfg.wifiConfigured = false;
+            cfg.ap = { ssid: "", password: "" };
+
+            fs.writeFileSync(DEVICE_CONFIG_FILE, JSON.stringify(cfg, null, 2));
+            console.log("✔ WiFi settings reset");
+
+            exec("sudo reboot", (err) => {
+                if (err) console.error("❌ Reboot error:", err);
+            });
+
+            res.json({ ok: true, rebooting: true });
+
+        } catch (err) {
+            console.error("❌ WiFi reset error:", err);
+            res.status(500).json({ error: "Reset WiFi failed" });
+        }
+    });
+
 }
 
 module.exports = { registerApiRoutes };

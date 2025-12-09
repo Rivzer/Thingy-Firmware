@@ -13,18 +13,18 @@
 
         <div class="settings-list">
             <!-- Dark Mode -->
-            <div class="settings-row">
+            <!-- <div class="settings-row">
                 <span class="settings-label">Dark Mode</span>
                 <div class="toggle-switch">
                     <div class="toggle-knob"></div>
                 </div>
-            </div>
+            </div> -->
 
             <!-- Language -->
-            <div class="settings-row">
+            <!-- <div class="settings-row">
                 <span class="settings-label">Language</span>
                 <span class="settings-value">English</span>
-            </div>
+            </div> -->
 
             <!-- App Settings -->
             <div class="settings-row settings-row-clickable" onclick="window.location='/settings?view=apps'">
@@ -46,8 +46,9 @@
 
             <!-- Reset & Reconfigure WiFi -->
             <div class="settings-row settings-row-actions">
-                <button class="btn btn-danger">Reset</button>
-                <button class="btn btn-danger-outline">Reconfigure WiFi</button>
+                <button class="btn btn-danger" onclick="resetFactory()">Reset</button>
+                <button class="btn btn-danger" onclick="resetWiFi()">Reset WiFi</button>
+                <button class="btn btn-danger" onclick="resetLocation()">Reset Location</button>
             </div>
         </div>
     </div>
@@ -70,6 +71,63 @@
             } catch (e) {
                 console.error(e);
                 document.getElementById("locationLabel").textContent = "Error";
+            }
+        }
+
+        async function resetLocation() {
+            if (!confirm("Reset location and detect again from IP?")) return;
+
+            try {
+                const res = await fetch("/api/location/reset", {
+                    method: "POST"
+                });
+
+                const data = await res.json();
+
+                if (!res.ok || !data.ok) {
+                    console.error("Reset location error:", data);
+                    alert("Failed to reset location");
+                    return;
+                }
+
+                await loadSettings();
+            } catch (e) {
+                console.error(e);
+                alert("Error while resetting location");
+            }
+        }
+
+        async function resetFactory() {
+            if (!confirm("Are you sure? This will reset the device completely.")) return;
+
+            try {
+                const res = await fetch("/api/reset", { method: "POST" });
+                const data = await res.json();
+
+                if (data.ok) {
+                    alert("Device resetting… it will reboot automatically.");
+                } else {
+                    alert("Reset failed.");
+                }
+            } catch (e) {
+                alert("Error communicating with device.");
+            }
+        }
+
+        async function resetWiFi() {
+            if (!confirm("Reset WiFi settings?\nNext boot will require WiFi setup again.")) return;
+
+            try {
+                const res = await fetch("/api/reset-wifi", { method: "POST" });
+                const data = await res.json();
+
+                if (data.ok) {
+                    alert("WiFi reset. Device rebooting…");
+                } else {
+                    alert("WiFi reset failed.");
+                }
+            } catch (e) {
+                alert("Error communicating with device.");
             }
         }
 

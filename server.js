@@ -95,15 +95,7 @@ if (fs.existsSync(DEVICE_CONFIG_FILE)) {
             password: ""
         },
         device_name: "Raspberry Pi Zero 2W",
-        time_format_24h: true,
-        time_zone: "Europe/Brussels",
-        location: {
-            city: "Brussels",
-            country: "BE",
-            lat: 50.8466,
-            lon: 4.3528,
-            source: "default"
-        }
+        time_format_24h: true
     };
 
     console.log("✔ device_config.json created:");
@@ -443,6 +435,8 @@ require("./routes/settings-routes").registerSettingsRoutes(app, {
 require("./routes/api-routes").registerApiRoutes(app, {
     checkFirmwareUpdate,
     TOKEN_FILE,
+    CONSOLE_DECK_FILE,
+    DEVICE_CONFIG_FILE,
     QRCode,
     CLIENT_ID,
     CLIENT_SECRET,
@@ -451,11 +445,11 @@ require("./routes/api-routes").registerApiRoutes(app, {
     axios,
     querystring,
     fs,
-    DEVICE_CONFIG_FILE,
     loadConsoleDeckConfig,
     exec,
     getLocationFromConfig,
-    mapWeatherCode
+    mapWeatherCode,
+    autoDetectLocationFromIP
 });
 
 // ===== ADMIN APP SETUP =====
