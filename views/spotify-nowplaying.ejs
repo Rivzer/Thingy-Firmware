@@ -11,14 +11,9 @@
 <body>
 
     <!-- LOGIN / QR SECTION -->
-    <div id="loginSection"
-        style="text-align:center; color:white; background:#111; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center;">
-        <h1>Scan to log in</h1>
-        <img id="qrImg" width="250" style="border-radius:16px; margin-bottom:12px;">
-        <p id="qrUrl" style="font-size:12px; opacity:0.4;"></p>
-    </div>
 
-    <div id="playerSection" style="display:none;">
+
+    <div id="playerSection">
         <div class="spotify-song-playing">
             <img onclick="history.back()" class="back-button" src="/spotify/img/turn-back.png"></img>
             <div class="clock time">00:00</div>
@@ -56,7 +51,7 @@
                 <div class="volume-knob" id="volumeKnob"></div>
                 <input id="volumeSlider" type="range" min="0" max="100" value="50" class="volume-slider">
             </div>
-            
+
         </div>
     </div>
 
@@ -72,28 +67,6 @@
         let lastTimestamp = 0;
         let trackDuration = 0;
         let isPlaying = false; // from Spotify
-
-        async function checkLoginState() {
-            const r = await fetch("/api/state");
-            const d = await r.json();
-
-            if (d.loggedIn) {
-                document.getElementById("loginSection").style.display = "none";
-                document.getElementById("playerSection").style.display = "block";
-                refreshPlayer(); // initial load
-            } else {
-                document.getElementById("loginSection").style.display = "flex";
-                document.getElementById("playerSection").style.display = "none";
-                loadQR();
-            }
-        }
-
-        async function loadQR() {
-            const r = await fetch("/api/qr");
-            const d = await r.json();
-            document.getElementById("qrImg").src = d.qr;
-            document.getElementById("qrUrl").innerText = d.url;
-        }
 
         async function refreshPlayer() {
             const r = await fetch("/api/playback");
@@ -243,7 +216,7 @@
             if (likeBtn) {
                 likeBtn.addEventListener("click", async () => {
                     if (!currentTrackId) return;
-                    
+
                     const isLiked = likeBtn.src.includes("like-active.svg");
                     // TODO: unlike doesnt sync with spotify
                     try {
@@ -307,9 +280,6 @@
         const POLL_INTERVAL = 1000;
         setInterval(refreshPlayer, POLL_INTERVAL);
         setInterval(smoothUpdate, 100);
-
-
-        checkLoginState();
     </script>
     <script>
         initLiveClock();

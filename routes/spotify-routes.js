@@ -3,6 +3,13 @@ function registerSpotifyRoutes(app, { getValidToken, axios }) {
     app.get("/spotify", async (req, res) => {
         const view = req.query.view;
 
+        // ===== GLOBAL LOGIN CHECK =====
+        const token = await getValidToken();
+
+        if (!token) {
+            return res.render("spotify-login");
+        }
+
         if (view === "nowplaying") {
             return res.render("spotify-nowplaying");
         }

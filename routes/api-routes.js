@@ -1,6 +1,3 @@
-// routes/api-routes.js
-const express = require("express");
-
 function registerApiRoutes(app, deps) {
     const {
         checkFirmwareUpdate,
@@ -63,7 +60,7 @@ function registerApiRoutes(app, deps) {
     app.get("/api/playlists", async (req, res) => {
         const token = await getValidToken();
         if (!token) {
-            return res.status(401).json({ error: "Not logged in" });
+            return res.status(401).json({ error: "User is not logged in." });
         }
 
         const limit = 50;
@@ -82,18 +79,18 @@ function registerApiRoutes(app, deps) {
                 hasMore: (offset + limit) < (r.data.total || 0),
             });
         } catch (e) {
-            console.log("Playlists API error:", e.response?.data || e.message);
-            res.status(500).json({ error: "Failed to fetch playlists" });
+            console.log("Spotify Playlists API Error:", e.response?.data || e.message);
+            res.status(500).json({ error: "Unable to fetch Spotify playlists." });
         }
     });
 
     // ===== API: SPOTIFY PLAY PLAYLIST =====
     app.get("/api/play-playlist", async (req, res) => {
         const token = await getValidToken();
-        if (!token) return res.status(401).send("Not logged in");
+        if (!token) return res.status(401).send("User is not logged in.");
 
         const id = req.query.playlist;
-        if (!id) return res.status(400).send("Missing playlist id");
+        if (!id) return res.status(400).send("Playlist ID is missing.");
 
         try {
             await axios.put(
@@ -104,18 +101,18 @@ function registerApiRoutes(app, deps) {
 
             res.send("OK");
         } catch (err) {
-            console.log("Play playlist error:", err.response?.data || err.message);
-            res.status(500).send("Error playing playlist");
+            console.log("Play Playlist Error:", err.response?.data || err.message);
+            res.status(500).send("Unable to start playlist.");
         }
     });
 
     // ===== API: SPOTIFY PLAY TRACK =====
     app.get("/api/play-track", async (req, res) => {
         const token = await getValidToken();
-        if (!token) return res.status(401).send("Not logged in");
+        if (!token) return res.status(401).send("User is not logged in.");
 
         const id = req.query.track;
-        if (!id) return res.status(400).send("Missing track id");
+        if (!id) return res.status(400).send("Track ID is missing.");
 
         try {
             await axios.put(
@@ -126,8 +123,8 @@ function registerApiRoutes(app, deps) {
 
             res.send("OK");
         } catch (err) {
-            console.log("Play track error:", err.response?.data || err.message);
-            res.status(500).send("Error playing track");
+            console.log("Play Track Error:", err.response?.data || err.message);
+            res.status(500).send("Unable to play track.");
         }
     });
 
@@ -135,7 +132,7 @@ function registerApiRoutes(app, deps) {
     app.get("/api/liked", async (req, res) => {
         const token = await getValidToken();
         if (!token) {
-            return res.status(401).json({ error: "Not logged in" });
+            return res.status(401).json({ error: "User is not logged in." });
         }
 
         const limit = 50;
@@ -154,8 +151,8 @@ function registerApiRoutes(app, deps) {
                 hasMore: (offset + limit) < (r.data.total || 0),
             });
         } catch (e) {
-            console.log("Liked tracks API error:", e.response?.data || e.message);
-            res.status(500).json({ error: "Failed to fetch liked tracks" });
+            console.log("Liked Tracks API Error:", e.response?.data || e.message);
+            res.status(500).json({ error: "Unable to load liked songs." });
         }
     });
 
@@ -163,7 +160,7 @@ function registerApiRoutes(app, deps) {
     app.get("/api/recent", async (req, res) => {
         const token = await getValidToken();
         if (!token) {
-            return res.status(401).json({ error: "Not logged in" });
+            return res.status(401).json({ error: "User is not logged in." });
         }
 
         const limit = 50;
@@ -187,15 +184,15 @@ function registerApiRoutes(app, deps) {
                 hasMore: items.length === limit && !!cursors.before,
             });
         } catch (e) {
-            console.log("Recently played API error:", e.response?.data || e.message);
-            res.status(500).json({ error: "Failed to fetch recently played tracks" });
+            console.log("Recently Played API Error:", e.response?.data || e.message);
+            res.status(500).json({ error: "Unable to load recently played tracks." });
         }
     });
 
     // ===== API: SPOTIFY CALLBACK =====
     app.get("/callback", async (req, res) => {
         const code = req.query.code;
-        if (!code) return res.send("No code received!");
+        if (!code) return res.send("Authorization code missing.");
 
         const authHeader =
             "Basic " + Buffer.from(`${CLIENT_ID}:${CLIENT_SECRET}`).toString("base64");
@@ -226,25 +223,25 @@ function registerApiRoutes(app, deps) {
             };
 
             fs.writeFileSync(TOKEN_FILE, JSON.stringify(tokens, null, 2));
-            console.log("✔ Saved new spotify_token.json");
+            console.log("✔ Spotify token saved successfully");
 
-            res.send("<h1>Login OK ✔ You can close this tab</h1>");
+            res.send("<h1>Login successful ✔ You may close this tab.</h1>");
         } catch (err) {
-            console.log("Callback error:", err.response?.data || err.message);
-            res.send("Error");
+            console.log("Spotify Callback Error:", err.response?.data || err.message);
+            res.send("Login failed.");
         }
     });
 
     // ===== API: VOLUME CONTROL =====
     app.get("/api/volume", async (req, res) => {
         const token = await getValidToken();
-        if (!token) return res.status(401).send("Not logged in");
+        if (!token) return res.status(401).send("User is not logged in.");
 
         const raw = req.query.percent;
         const percent = Number(raw);
 
         if (Number.isNaN(percent) || percent < 0 || percent > 100) {
-            return res.status(400).send("Invalid volume percent");
+            return res.status(400).send("Invalid volume percentage.");
         }
 
         try {
@@ -256,8 +253,8 @@ function registerApiRoutes(app, deps) {
 
             res.send("OK");
         } catch (err) {
-            console.log("Volume error:", err.response?.data || err.message);
-            res.status(500).send("Error setting volume");
+            console.log("Volume Adjustment Error:", err.response?.data || err.message);
+            res.status(500).send("Unable to set volume.");
         }
     });
 
@@ -274,11 +271,10 @@ function registerApiRoutes(app, deps) {
             const data = r.data;
             if (!data) return res.json({});
 
-            // Episode but no item
             if (!data.item && data.currently_playing_type === "episode") {
                 return res.json({
-                    track: "Podcast episode playing",
-                    artist: "Spotify does not provide episode metadata",
+                    track: "Podcast episode",
+                    artist: "Metadata not available",
                     cover: "",
                     duration: 0,
                     progress: 0,
@@ -286,9 +282,7 @@ function registerApiRoutes(app, deps) {
                     id: null,
                     isPlaying: !!data.is_playing,
                     type: "episode",
-                    volume: typeof data.device?.volume_percent === "number"
-                        ? data.device.volume_percent
-                        : null,
+                    volume: data.device?.volume_percent ?? null,
                 });
             }
 
@@ -333,13 +327,11 @@ function registerApiRoutes(app, deps) {
                 id: item.id,
                 isPlaying: !!data.is_playing,
                 type: item.type,
-                volume: typeof data.device?.volume_percent === "number"
-                    ? data.device.volume_percent
-                    : null,
+                volume: data.device?.volume_percent ?? null,
             });
 
         } catch (e) {
-            console.log("Playback error:", e.response?.data || e.message);
+            console.log("Playback Error:", e.response?.data || e.message);
             res.json({});
         }
     });
@@ -347,7 +339,7 @@ function registerApiRoutes(app, deps) {
     // ===== API: PLAYER CONTROLS =====
     app.get("/api/playpause", async (req, res) => {
         const token = await getValidToken();
-        if (!token) return res.send("Not logged in");
+        if (!token) return res.send("User is not logged in.");
 
         try {
             const playback = await axios.get(
@@ -356,97 +348,93 @@ function registerApiRoutes(app, deps) {
             );
 
             if (playback.data?.is_playing) {
-                await axios.put(
-                    "https://api.spotify.com/v1/me/player/pause",
-                    {},
-                    { headers: { Authorization: `Bearer ${token}` } }
-                );
+                await axios.put("https://api.spotify.com/v1/me/player/pause", {}, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
             } else {
-                await axios.put(
-                    "https://api.spotify.com/v1/me/player/play",
-                    {},
-                    { headers: { Authorization: `Bearer ${token}` } }
-                );
+                await axios.put("https://api.spotify.com/v1/me/player/play", {}, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
             }
 
             res.send("OK");
         } catch (err) {
-            console.log("Play/pause error:", err.response?.data || err.message);
-            res.send("Error");
+            console.log("Play/Pause Error:", err.response?.data || err.message);
+            res.send("Unable to toggle playback.");
         }
     });
 
     app.get("/api/next", async (req, res) => {
         const token = await getValidToken();
-        if (!token) return res.send("Not logged in");
+        if (!token) return res.send("User is not logged in.");
 
-        await axios
-            .post("https://api.spotify.com/v1/me/player/next", {}, {
+        try {
+            await axios.post("https://api.spotify.com/v1/me/player/next", {}, {
                 headers: { Authorization: `Bearer ${token}` },
-            })
-            .catch(() => { });
+            });
+        } catch { }
 
         res.send("OK");
     });
 
     app.get("/api/prev", async (req, res) => {
         const token = await getValidToken();
-        if (!token) return res.send("Not logged in");
+        if (!token) return res.send("User is not logged in.");
 
-        await axios
-            .post("https://api.spotify.com/v1/me/player/previous", {}, {
+        try {
+            await axios.post("https://api.spotify.com/v1/me/player/previous", {}, {
                 headers: { Authorization: `Bearer ${token}` },
-            })
-            .catch(() => { });
+            });
+        } catch { }
 
         res.send("OK");
     });
 
     app.get("/api/seek", async (req, res) => {
         const token = await getValidToken();
-        if (!token) return res.send("Not logged in");
+        if (!token) return res.send("User is not logged in.");
 
         const position = parseInt(req.query.position, 10);
 
-        await axios
-            .put(
+        try {
+            await axios.put(
                 `https://api.spotify.com/v1/me/player/seek?position_ms=${position}`,
                 {},
                 { headers: { Authorization: `Bearer ${token}` } }
-            )
-            .catch(() => { });
+            );
+        } catch { }
 
         res.send("OK");
     });
 
     app.get("/api/like", async (req, res) => {
         const token = await getValidToken();
-        if (!token) return res.send("Not logged in");
+        if (!token) return res.send("User is not logged in.");
 
         const id = req.query.track;
 
-        await axios
-            .put(
+        try {
+            await axios.put(
                 `https://api.spotify.com/v1/me/tracks?ids=${id}`,
                 {},
                 { headers: { Authorization: `Bearer ${token}` } }
-            )
-            .catch(() => { });
+            );
+        } catch { }
 
         res.send("OK");
     });
 
     app.get("/api/unlike", async (req, res) => {
         const token = await getValidToken();
-        if (!token) return res.send("Not logged in");
+        if (!token) return res.send("User is not logged in.");
 
         const id = req.query.track;
 
-        await axios
-            .delete(`https://api.spotify.com/v1/me/tracks?ids=${id}`, {
+        try {
+            await axios.delete(`https://api.spotify.com/v1/me/tracks?ids=${id}`, {
                 headers: { Authorization: `Bearer ${token}` },
-            })
-            .catch(() => { });
+            });
+        } catch { }
 
         res.send("OK");
     });
@@ -471,40 +459,37 @@ function registerApiRoutes(app, deps) {
         }
     });
 
-    // ===== API: CONSOLE DECK – PROGRAMMA STARTEN OP DE PI =====
+    // ===== API: CONSOLE DECK – RUN PROGRAM ON PC =====
     app.post("/api/consoledeck/run", (req, res) => {
         const { id } = req.body || {};
 
         const cfg = loadConsoleDeckConfig();
-
-        // Als geen id meegegeven: gebruik geselecteerde app
         const appIdToRun = id || cfg.selectedAppId;
 
         if (!appIdToRun) {
-            return res.status(400).json({ error: "Geen app-id opgegeven en geen geselecteerde app." });
+            return res.status(400).json({ error: "No app ID provided." });
         }
 
         const appEntry = cfg.apps.find(a => a.id === appIdToRun);
         if (!appEntry) {
-            return res.status(404).json({ error: "App niet gevonden" });
+            return res.status(404).json({ error: "Application not found." });
         }
 
         if (!appEntry.pcCommand) {
-            return res.status(400).json({ error: "Geen pcCommand ingesteld voor deze app" });
+            return res.status(400).json({ error: "No command defined for this application." });
         }
 
         const command = appEntry.pcCommand;
 
-        console.log(`▶ ConsoleDeck: start command: ${command}`);
+        console.log(`▶ Executing ConsoleDeck command: ${command}`);
 
         exec(command, (error, stdout, stderr) => {
             if (error) {
-                console.error("❌ Fout bij uitvoeren:", error.message);
-                console.error("STDERR:", stderr);
-                return res.status(500).json({ error: "Uitvoeren mislukt", detail: error.message });
+                console.error("❌ Execution failed:", error.message);
+                return res.status(500).json({ error: "Execution failed", detail: error.message });
             }
 
-            console.log("✔ Programma uitgevoerd. STDOUT:", stdout);
+            console.log("✔ Command executed successfully. Output:", stdout);
             res.json({ ok: true, command, stdout });
         });
     });
@@ -515,8 +500,8 @@ function registerApiRoutes(app, deps) {
             const cfg = JSON.parse(fs.readFileSync(DEVICE_CONFIG_FILE, "utf8"));
 
             const location = getLocationFromConfig(cfg);
-
             const url = `https://api.open-meteo.com/v1/forecast?latitude=${location.lat}&longitude=${location.lon}&current_weather=true`;
+
             const response = await axios.get(url);
             const weather = response.data.current_weather;
 
@@ -534,18 +519,17 @@ function registerApiRoutes(app, deps) {
                 }
             });
         } catch (err) {
-            console.error("Weather error:", err);
-            res.status(500).json({ error: "Failed to load weather" });
+            console.error("Weather API Error:", err);
+            res.status(500).json({ error: "Unable to load weather data." });
         }
     });
 
-    // ===== API: RESET LOCATION (auto-detect via IP) =====
+    // ===== API: RESET LOCATION =====
     app.post("/api/location/reset", async (req, res) => {
         try {
-            // Locatie opnieuw proberen op te halen via IP
+            console.log("🌍 Resetting location using IP auto-detection...");
             await autoDetectLocationFromIP();
 
-            // Nieuwe config inlezen
             const cfg = JSON.parse(fs.readFileSync(DEVICE_CONFIG_FILE, "utf8"));
 
             res.json({
@@ -554,15 +538,15 @@ function registerApiRoutes(app, deps) {
                 time_zone: cfg.time_zone || "Europe/Brussels"
             });
         } catch (e) {
-            console.error("Location reset error:", e);
-            res.status(500).json({ ok: false, error: "Failed to reset location" });
+            console.error("Location Reset Error:", e);
+            res.status(500).json({ ok: false, error: "Unable to reset location." });
         }
     });
 
     // ===== API: FACTORY RESET =====
     app.post("/api/reset", async (req, res) => {
         try {
-            console.log("⚠️ Factory reset triggered...");
+            console.log("⚠️ Factory reset initiated...");
 
             const filesToRemove = [
                 DEVICE_CONFIG_FILE,
@@ -573,26 +557,26 @@ function registerApiRoutes(app, deps) {
             for (const file of filesToRemove) {
                 if (fs.existsSync(file)) {
                     fs.unlinkSync(file);
-                    console.log("🗑️ Removed", file);
+                    console.log("🗑️ Removed:", file);
                 }
             }
 
             exec("sudo reboot", (err) => {
-                if (err) console.error("❌ Reboot error:", err);
+                if (err) console.error("Reboot Error:", err);
             });
 
             res.json({ ok: true, rebooting: true });
 
         } catch (err) {
-            console.error("❌ Factory reset error:", err);
-            res.status(500).json({ error: "Factory reset failed" });
+            console.error("Factory Reset Error:", err);
+            res.status(500).json({ error: "Factory reset failed." });
         }
     });
 
     // ===== API: RESET WIFI =====
     app.post("/api/reset-wifi", async (req, res) => {
         try {
-            console.log("⚠️ WiFi reset triggered...");
+            console.log("⚠️ WiFi reset requested...");
 
             let cfg = {};
             try {
@@ -605,17 +589,17 @@ function registerApiRoutes(app, deps) {
             cfg.ap = { ssid: "", password: "" };
 
             fs.writeFileSync(DEVICE_CONFIG_FILE, JSON.stringify(cfg, null, 2));
-            console.log("✔ WiFi settings reset");
+            console.log("✔ WiFi configuration cleared. Rebooting...");
 
             exec("sudo reboot", (err) => {
-                if (err) console.error("❌ Reboot error:", err);
+                if (err) console.error("Reboot Error:", err);
             });
 
             res.json({ ok: true, rebooting: true });
 
         } catch (err) {
-            console.error("❌ WiFi reset error:", err);
-            res.status(500).json({ error: "Reset WiFi failed" });
+            console.error("WiFi Reset Error:", err);
+            res.status(500).json({ error: "WiFi reset failed." });
         }
     });
 

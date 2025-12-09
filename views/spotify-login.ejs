@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="/global.css">
+    <style>
+        body {
+            width: 480px;
+            height: 800px;
+            margin: 0;
+            background: #121212;
+            color: white;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .title {
+            font-size: 32px;
+            font-weight: bold;
+            margin-top: 10px;
+            margin-bottom: 20px;
+        }
+
+        .description {
+            font-size: 18px;
+            margin-bottom: 20px;
+            opacity: 0.8;
+        }
+
+        .qr-box {
+            width: 300px;
+            height: 300px;
+            background: #222;
+            margin: 0 auto;
+            border-radius: 14px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .qr-image {
+            width: 90%;
+            height: 90%;
+            object-fit: contain;
+        }
+
+        .loading {
+            font-size: 20px;
+            opacity: 0.7;
+        }
+
+        .qr-url {
+            margin-top: 10px;
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        .error {
+            color: #ff4d4d;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <img onclick="history.back()" class="back-button" src="/spotify/img/turn-back.png">
+
+    <div class="container">
+        <div class="title">Spotify Login</div>
+        <div class="description">
+            Scan the QR code to sign in with Spotify.
+        </div>
+
+        <div id="qr-box" class="qr-box">
+            <div class="loading">Loading…</div>
+        </div>
+
+        <p class="qr-url" id="qr-url"></p>
+
+        <script>
+            async function loadQR() {
+                const box = document.getElementById("qr-box");
+                const label = document.getElementById("qr-url");
+
+                box.innerHTML = "<div class='loading'>Loading…</div>";
+                label.textContent = "";
+
+                try {
+                    const res = await fetch("/api/qr");
+                    const data = await res.json();
+
+                    box.innerHTML = `<img src="${data.qr}" class="qr-image">`;
+                    // label.innerHTML = `Or open: <br><b>${data.url}</b>`;
+
+                } catch {
+                    box.innerHTML = "<p class='error'>Failed to load QR code.</p>";
+                }
+            }
+
+            async function checkLogin() {
+                try {
+                    const res = await fetch("/api/state");
+                    const data = await res.json();
+
+                    if (data.loggedIn) {
+                        window.location.href = "/spotify";
+                    }
+                } catch (e) {
+                    console.error("Login check failed");
+                }
+            }
+
+            loadQR();
+            setInterval(checkLogin, 3000);
+        </script>
+    </div>
+</body>
+</html>
