@@ -480,7 +480,15 @@ function registerApiRoutes(app, deps) {
             return res.status(400).json({ error: "No command defined for this application." });
         }
 
-        const command = appEntry.pcCommand;
+        let command = appEntry.pcCommand;
+        
+        // If it's a direct file path (not already a macro command), wrap it in quotes for paths with spaces
+        if (!command.startsWith('.\\macro.exe') && !command.startsWith('"')) {
+            // Check if it's a file path (has extension like .exe, .bat, .cmd, .ps1, etc)
+            if (command.match(/\.[a-zA-Z0-9]+$/)) {
+                command = `"${command}"`;
+            }
+        }
 
         console.log(`▶ Executing ConsoleDeck command: ${command}`);
 

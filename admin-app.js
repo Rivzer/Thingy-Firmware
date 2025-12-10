@@ -73,6 +73,51 @@ module.exports = function createAdminApp({
         res.json(app);
     });
 
+    // Browse for exe file and get full path
+    adminApp.post("/api/consoledeck/browse-exe", (req, res) => {
+        const { appName } = req.body;
+
+        // Use PowerShell to open file dialog and get path
+        const tempScript = path.join(__dirname, `temp_browse_${Date.now()}.ps1`);
+        const psScript = `
+Add-Type -AssemblyName System.Windows.Forms
+$dialog = New-Object System.Windows.Forms.OpenFileDialog
+$dialog.Filter = "All Files (*.*)|*.*|Executable Files (*.exe)|*.exe|Batch Files (*.bat;*.cmd)|*.bat;*.cmd|Scripts (*.ps1;*.vbs)|*.ps1;*.vbs"
+$dialog.Title = "Select Application"
+$dialog.InitialDirectory = [Environment]::GetFolderPath('ProgramFiles')
+$result = $dialog.ShowDialog()
+if ($result -eq [System.Windows.Forms.DialogResult]::OK) {
+    Write-Output $dialog.FileName
+} else {
+    Write-Output "CANCELLED"
+}
+`;
+
+        fs.writeFileSync(tempScript, psScript, 'utf8');
+
+        exec(`powershell -ExecutionPolicy Bypass -NoProfile -File "${tempScript}"`, { encoding: 'utf8' }, (error, stdout, stderr) => {
+            try { fs.unlinkSync(tempScript); } catch (e) { }
+
+            if (error) {
+                console.error("Browse error:", error);
+                console.error("stderr:", stderr);
+                return res.status(500).json({ error: "Failed to open file dialog: " + (stderr || error.message) });
+            }
+
+            const exePath = stdout.trim();
+            
+            if (exePath === "CANCELLED" || !exePath) {
+                return res.status(400).json({ error: "No file selected" });
+            }
+
+            if (fs.existsSync(exePath)) {
+                return res.json({ exePath });
+            } else {
+                return res.status(400).json({ error: "File not found: " + exePath });
+            }
+        });
+    });
+
     adminApp.delete("/api/consoledeck/apps/:id", (req, res) => {
         const { id } = req.params;
 

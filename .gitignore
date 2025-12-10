@@ -36,6 +36,10 @@ data/*
 *.bak
 *.tmp
 
+# Temporary PowerShell scripts
+temp_browse_*.ps1
+temp_extract_*.ps1
+
 # ==========================
 # Build / Cache
 # ==========================

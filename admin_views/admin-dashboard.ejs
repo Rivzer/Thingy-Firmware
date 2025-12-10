@@ -144,26 +144,42 @@
 
     <div class="row section">
         <div class="card card-half">
-            <h2>Nieuwe app toevoegen</h2>
+            <h2>Add New App</h2>
             <form id="addForm">
-                <input type="text" name="name" placeholder="Naam" required>
-                <input type="text" name="pcCommand" placeholder="PC command" required>
+                <input type="text" name="name" placeholder="Name" required>
+                
+                <label>Command Type:</label>
+                <select id="commandType" name="commandType" style="width:100%; padding:6px; margin-bottom:8px; background:#181818; color:white; border:1px solid #333; border-radius:4px;">
+                    <option value="exe">Launch Application/File</option>
+                    <option value="macro">Keyboard Macro</option>
+                </select>
+
+                <div id="exeCommandInput">
+                    <input type="text" name="exePath" id="exePath" placeholder="Full path to file" required>
+                    <button type="button" onclick="browseForExe()" style="width:100%; margin-bottom:8px;">Browse for file</button>
+                </div>
+
+                <div id="macroCommandInput" style="display:none;">
+                    <input type="text" name="macroKeys" id="macroKeys" placeholder="e.g., alt a, ctrl shift esc, win d">
+                    <small style="color:#aaa; display:block; margin-bottom:8px;">Examples: "alt tab", "ctrl c", "win r"</small>
+                </div>
+
                 <input type="text" name="icon" placeholder="Icon URL (optional)">
                 <input type="text" name="color" placeholder="#RRGGBB (optional)">
-                <input type="text" name="category" placeholder="Categorie (optional)">
+                <input type="text" name="category" placeholder="Category (optional)">
 
                 <label style="display:block; margin-top:4px; font-size:0.85rem;">
                     <input type="checkbox" id="showLabel" name="showLabel" checked>
-                    Tekst overlay tonen op tile
+                    Show text overlay on tile
                 </label>
 
-                <button type="submit">Toevoegen</button>
+                <button type="submit">Add</button>
             </form>
 
         </div>
 
         <div class="card card-half">
-            <h2>Geselecteerde app</h2>
+            <h2>Selected App</h2>
             <% if (config.selectedAppId) { const current=config.apps.find(a=> a.id === config.selectedAppId);
                 %>
                 <% if (current) { %>
@@ -179,20 +195,19 @@
                         </span>
                         <% } %>
                             <% if (current.color) { %>
-                                <span class="pill">kleur: <%= current.color %></span>
+                                <span class="pill">color: <%= current.color %></span>
                                 <% } %>
                                     <% } else { %>
-                                        <p class="empty-hint">De geselecteerde app bestaat niet meer.</p>
+                                        <p class="empty-hint">The selected app no longer exists.</p>
                                         <% } %>
                                             <% } else { %>
-                                                <p class="empty-hint">Nog geen app geselecteerd. Klik op "Selecteren"
-                                                    bij een app hieronder.</p>
+                                                <p class="empty-hint">No app selected yet. Click "Select" on an app below.</p>
                                                 <% } %>
         </div>
     </div>
 
     <div class="section">
-        <h2>Bestaande apps</h2>
+        <h2>Existing Apps</h2>
 
         <div id="apps">
             <% config.apps.forEach(app=> { %>
@@ -211,12 +226,12 @@
                         <small>
                             <%= app.category || '' %>
                         </small><br>
-                        <small>Overlay: <%= app.showLabel===false ? 'uit' : 'aan' %></small>
+                        <small>Overlay: <%= app.showLabel===false ? 'off' : 'on' %></small>
                     </div>
 
-                    <button class="select-btn">Selecteren</button>
-                    <button class="edit-btn">Bewerken</button>
-                    <button class="delete-btn">Verwijderen</button>
+                    <button class="select-btn">Select</button>
+                    <button class="edit-btn">Edit</button>
+                    <button class="delete-btn">Delete</button>
                 </div>
                 <% }) %>
         </div>
@@ -228,6 +243,49 @@
         
         const addForm = document.getElementById('addForm');
         const appsContainer = document.getElementById('apps');
+        const commandTypeSelect = document.getElementById('commandType');
+        const exeCommandInput = document.getElementById('exeCommandInput');
+        const macroCommandInput = document.getElementById('macroCommandInput');
+
+        // Toggle command type inputs
+        commandTypeSelect.addEventListener('change', () => {
+            const type = commandTypeSelect.value;
+            if (type === 'exe') {
+                exeCommandInput.style.display = 'block';
+                macroCommandInput.style.display = 'none';
+                document.getElementById('exePath').required = true;
+                document.getElementById('macroKeys').required = false;
+            } else {
+                exeCommandInput.style.display = 'none';
+                macroCommandInput.style.display = 'block';
+                document.getElementById('exePath').required = false;
+                document.getElementById('macroKeys').required = true;
+            }
+        });
+
+        // Browse for exe file using server-side file dialog
+        async function browseForExe() {
+            const appName = addForm.name.value.trim();
+            
+            try {
+                const res = await fetch('/api/consoledeck/browse-exe', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ appName })
+                });
+
+                const data = await res.json();
+                
+                if (res.ok && data.exePath) {
+                    document.getElementById('exePath').value = data.exePath;
+                } else {
+                    alert('Error: ' + (data.error || 'Failed to select file'));
+                }
+            } catch (err) {
+                console.error('Browse failed:', err);
+                alert('Failed to open file browser');
+            }
+        }
 
         addForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -235,15 +293,28 @@
             const body = Object.fromEntries(formData.entries());
             body.showLabel = document.getElementById('showLabel').checked;
 
+            // Build the pcCommand based on command type
+            const commandType = body.commandType;
+            if (commandType === 'exe') {
+                body.pcCommand = body.exePath;
+            } else if (commandType === 'macro') {
+                body.pcCommand = `.\\macro-maker\\macro.exe ${body.macroKeys}`;
+            }
+
+            // Remove the temporary fields
+            delete body.commandType;
+            delete body.exePath;
+            delete body.macroKeys;
+
             let url;
             let method;
 
             if (editingAppId) {
-                // BEWERKEN
+                // EDIT
                 url = '/api/consoledeck/apps/' + encodeURIComponent(editingAppId);
                 method = 'PUT';
             } else {
-                // NIEUWE APP
+                // NEW APP
                 url = '/api/consoledeck/apps';
                 method = 'POST';
             }
@@ -257,12 +328,12 @@
                 const app = await res.json();
 
                 if (!res.ok) {
-                    alert('Fout: ' + (app.error || 'unknown'));
+                    alert('Error: ' + (app.error || 'unknown'));
                     return;
                 }
 
                 if (editingAppId) {
-                    // UI updaten voor bestaande row
+                    // Update UI for existing row
                     const row = appsContainer.querySelector(`.app-row[data-id="${editingAppId}"]`);
                     if (row) {
                         row.dataset.name = app.name;
@@ -276,10 +347,10 @@
                         const smalls = row.querySelectorAll('small');
                         if (smalls[0]) smalls[0].textContent = app.pcCommand;
                         if (smalls[1]) smalls[1].textContent = app.category || '';
-                        if (smalls[2]) smalls[2].textContent = 'Overlay: ' + (app.showLabel === false ? 'uit' : 'aan');
+                        if (smalls[2]) smalls[2].textContent = 'Overlay: ' + (app.showLabel === false ? 'off' : 'on');
                     }
                 } else {
-                    // Nieuwe row toevoegen
+                    // Add new row
                     const row = document.createElement('div');
                     row.className = 'app-row';
                     row.dataset.id = app.id;
@@ -295,11 +366,11 @@
                     <strong>${app.name}</strong><br>
                     <small>${app.pcCommand}</small><br>
                     <small>${app.category || ''}</small><br>
-                    <small>Overlay: ${app.showLabel === false ? 'uit' : 'aan'}</small>
+                    <small>Overlay: ${app.showLabel === false ? 'off' : 'on'}</small>
                 </div>
-                <button class="select-btn">Selecteren</button>
-                <button class="edit-btn">Bewerken</button>
-                <button class="delete-btn">Verwijderen</button>
+                <button class="select-btn">Select</button>
+                <button class="edit-btn">Edit</button>
+                <button class="delete-btn">Delete</button>
             `;
                     appsContainer.appendChild(row);
                 }
@@ -307,11 +378,14 @@
                 // Form reset
                 addForm.reset();
                 document.getElementById('showLabel').checked = true;
+                commandTypeSelect.value = 'exe';
+                exeCommandInput.style.display = 'block';
+                macroCommandInput.style.display = 'none';
                 editingAppId = null;
-                addForm.querySelector('button[type="submit"]').textContent = 'Toevoegen';
+                addForm.querySelector('button[type="submit"]').textContent = 'Add';
             } catch (err) {
                 console.error(err);
-                alert('Onbekende fout');
+                alert('Unknown error');
             }
         });
 
@@ -330,7 +404,7 @@
                     });
                     const data = await res.json();
                     if (!res.ok) {
-                        alert('Fout bij selecteren: ' + (data.error || 'unknown'));
+                        alert('Error selecting: ' + (data.error || 'unknown'));
                         return;
                     }
 
@@ -338,7 +412,7 @@
                     row.classList.add('selected');
                 } catch (err) {
                     console.error(err);
-                    alert('Onbekende fout bij selecteren');
+                    alert('Unknown error selecting');
                 }
             }
 
@@ -346,33 +420,53 @@
             if (e.target.classList.contains('edit-btn')) {
                 editingAppId = id;
 
-                // form velden vullen vanuit data attrs
+                // Fill form fields from data attributes
                 addForm.name.value = row.dataset.name || '';
-                addForm.pcCommand.value = row.dataset.pcCommand || '';
+                const pcCommand = row.dataset.pcCommand || '';
+                
+                // Detect command type
+                if (pcCommand.includes('macro.exe')) {
+                    commandTypeSelect.value = 'macro';
+                    exeCommandInput.style.display = 'none';
+                    macroCommandInput.style.display = 'block';
+                    // Extract keys from ".\macro.exe alt a" format
+                    const keys = pcCommand.replace(/.*macro\.exe\s+/, '');
+                    document.getElementById('macroKeys').value = keys;
+                    document.getElementById('exePath').required = false;
+                    document.getElementById('macroKeys').required = true;
+                } else {
+                    commandTypeSelect.value = 'exe';
+                    exeCommandInput.style.display = 'block';
+                    macroCommandInput.style.display = 'none';
+                    document.getElementById('exePath').value = pcCommand;
+                    document.getElementById('exePath').required = true;
+                    document.getElementById('macroKeys').required = false;
+                }
+
                 addForm.icon.value = row.dataset.icon || '';
                 addForm.color.value = row.dataset.color || '';
                 addForm.category.value = row.dataset.category || '';
                 document.getElementById('showLabel').checked = (row.dataset.showLabel !== 'false');
 
-                addForm.querySelector('button[type="submit"]').textContent = 'Opslaan';
+                addForm.querySelector('button[type="submit"]').textContent = 'Save';
             }
 
             // DELETE
             if (e.target.classList.contains('delete-btn')) {
-                if (!confirm('Deze app verwijderen?')) return;
+                if (!confirm('Delete this app?')) return;
                 try {
                     const res = await fetch('/api/consoledeck/apps/' + encodeURIComponent(id), {
                         method: 'DELETE'
                     });
                     const data = await res.json();
                     if (!res.ok) {
-                        alert('Fout bij verwijderen: ' + (data.error || 'unknown'));
+                        alert('Error deleting: ' + (data.error || 'unknown'));
                         return;
                     }
                     row.remove();
                 } catch (err) {
                     console.error(err);
-                    alert('Onbekende fout bij verwijderen');
+                    alert('Unknown error deleting');
                 }
             }
         });
