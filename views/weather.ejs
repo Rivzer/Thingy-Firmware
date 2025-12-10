@@ -43,7 +43,7 @@
                 locEl.textContent = `${loc.city}, ${loc.country}`;
                 tempEl.textContent = `${cur.temp.toFixed(1)}°C`;
                 condEl.textContent = `${(cur.icon || "")} ${(cur.condition || "")}`.trim();
-                metaEl.textContent = `Wind: ${cur.wind} km/h • Code: ${cur.code}`;
+                metaEl.textContent = `Wind: ${cur.wind} km/h`;
             } catch (e) {
                 console.error("Weather load failed:", e);
                 locEl.textContent = "Error loading weather";

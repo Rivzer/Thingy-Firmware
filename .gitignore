@@ -9,6 +9,8 @@ yarn-error.log*
 # Environment variables
 .env
 
+.vscode
+
 # Runtime files
 *.log
 .DS_Store
