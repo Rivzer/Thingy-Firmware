@@ -62,13 +62,13 @@ class PythonSpotifyPlayer:
         self.CLIENT_SECRET = "39cfca99e8ce4fcc879768e32c0219e7"  # 👈 VERANDER DIT
         self.REDIRECT_URI = "https://192.168.9.186:8888/callback"
         
-        # Token file
-        self.TOKEN_FILE = "/root/.spotify_token.json"
-
+        # Token file in project folder ipv root
         base_dir = os.path.dirname(os.path.abspath(__file__))
-        self.CERT_FILE = os.path.join(base_dir, "cert.pem")  # 👈 cert.pem in je huidige folder
-        self.KEY_FILE = os.path.join(base_dir, "key.pem")    # 👈 key.pem in je huidige folder
+        self.TOKEN_FILE = os.path.join(base_dir, ".spotify_token.json")
+        self.CERT_FILE = os.path.join(base_dir, "cert.pem")
+        self.KEY_FILE = os.path.join(base_dir, "key.pem")
         
+        print(f"📁 Token file: {self.TOKEN_FILE}")
         print(f"📁 Cert: {self.CERT_FILE}")
         print(f"📁 Key: {self.KEY_FILE}")
         
@@ -84,6 +84,8 @@ class PythonSpotifyPlayer:
         self.auth_url = None
         self.qr_image = None
         self.auth_code = None
+        self.auth_manager = None
+        self.callback_received = False
         
         # Spotify data
         self.current_track = {
@@ -180,11 +182,12 @@ class PythonSpotifyPlayer:
                         self.send_header('Content-type', 'text/html')
                         self.end_headers()
                         
-                        html = """<html><body><h1>✅ Login Successful!</h1></body></html>"""
+                        html = """<html><body><h1>✅ Login Successful!</h1><p>You can close this window.</p></body></html>"""
                         self.wfile.write(html.encode())
                         
                         # Store auth code
                         self.server.player.auth_code = code
+                        self.server.player.callback_received = True
                         print(f"✅ Got auth code: {code}")
                         
                         # Stop server
@@ -206,6 +209,7 @@ class PythonSpotifyPlayer:
             with socketserver.TCPServer(("0.0.0.0", 8888), CallbackHandler) as httpd:
                 httpd.socket = context.wrap_socket(httpd.socket, server_side=True)
                 httpd.player = self
+                httpd.timeout = 1  # Timeout voor shutdown
                 print("✅ HTTPS server running on https://localhost:8888")
                 httpd.serve_forever()
                 
@@ -221,26 +225,65 @@ class PythonSpotifyPlayer:
             self.auth_manager = SpotifyOAuth(
                 client_id=self.CLIENT_ID,
                 client_secret=self.CLIENT_SECRET,
-                redirect_uri=self.REDIRECT_URI,  # HTTPS URL
+                redirect_uri=self.REDIRECT_URI,
                 scope=scope,
-                cache_path=self.TOKEN_FILE,
+                cache_path=self.TOKEN_FILE,  # Gebruik onze token file
                 show_dialog=True
             )
             
-            # Start HTTPS server in background thread
-            server_thread = threading.Thread(target=self.start_https_server, daemon=True)
-            server_thread.start()
-            time.sleep(2)  # Wacht tot server start
+            # Controleer of er al een token is
+            token_info = self.get_cached_token()
             
-            # Genereer auth URL
-            self.auth_url = self.auth_manager.get_authorize_url()
-            self.login_state = "logged_out"
-            
-            print(f"🔗 Login URL: {self.auth_url}")
+            if token_info:
+                # Valideer token
+                if self.auth_manager.is_token_expired(token_info):
+                    print("🔄 Token expired, refreshing...")
+                    token_info = self.auth_manager.refresh_access_token(
+                        token_info['refresh_token']
+                    )
+                    self.save_token(token_info)
+                
+                # Maak client met geldige token
+                self.sp = spotipy.Spotify(auth_manager=self.auth_manager)
+                self.login_state = "logged_in"
+                print("✅ Using cached token")
+            else:
+                # Start HTTPS server in background thread
+                server_thread = threading.Thread(target=self.start_https_server, daemon=True)
+                server_thread.start()
+                time.sleep(2)  # Wacht tot server start
+                
+                # Genereer auth URL
+                self.auth_url = self.auth_manager.get_authorize_url()
+                self.login_state = "logged_out"
+                self.generate_qr_code()
+                
+                print(f"🔗 Login URL: {self.auth_url}")
             
         except Exception as e:
             print(f"❌ Spotify init error: {e}")
             self.login_state = "error"
+    
+    def get_cached_token(self):
+        """Haal gecached token op uit de token file"""
+        try:
+            if os.path.exists(self.TOKEN_FILE):
+                with open(self.TOKEN_FILE, 'r') as f:
+                    token_info = json.load(f)
+                print("📁 Loaded cached token")
+                return token_info
+        except Exception as e:
+            print(f"❌ Error loading token: {e}")
+        return None
+    
+    def save_token(self, token_info):
+        """Sla token op in file"""
+        try:
+            with open(self.TOKEN_FILE, 'w') as f:
+                json.dump(token_info, f, indent=2)
+            print("✅ Token saved to:", self.TOKEN_FILE)
+        except Exception as e:
+            print(f"❌ Token save error: {e}")
     
     def generate_qr_code(self):
         """Genereer QR code van auth URL"""
@@ -271,36 +314,28 @@ class PythonSpotifyPlayer:
             except Exception as e:
                 print(f"❌ QR code error: {e}")
     
-    def save_token(self, token_info):
-        """Sla token op in file"""
+    def handle_auth_callback(self):
+        """Handle de callback als we een auth code hebben gekregen"""
+        if not self.auth_code or not self.auth_manager:
+            return False
+        
         try:
-            with open(self.TOKEN_FILE, 'w') as f:
-                json.dump(token_info, f)
-            print("✅ Token saved")
-        except Exception as e:
-            print(f"❌ Token save error: {e}")
-    
-    def handle_auth_callback(self, url):
-        """Handle de callback URL na login"""
-        try:
-            # Parse de code uit de URL
-            if "code=" in url:
-                code = url.split("code=")[1].split("&")[0]
-                
-                # Haal token op
-                token_info = self.auth_manager.get_access_token(code)
-                
-                if token_info:
-                    # Sla token op
-                    self.save_token(token_info)
-                    
-                    # Maak nieuwe client
-                    self.sp = spotipy.Spotify(auth_manager=self.auth_manager)
-                    self.login_state = "logged_in"
-                    print("✅ Login successful!")
-                    return True
+            print("🔄 Exchanging auth code for token...")
+            # Haal token op met auth code
+            token_info = self.auth_manager.get_access_token(self.auth_code)
             
-            print("❌ Failed to get token from callback")
+            if token_info:
+                # Sla token op
+                self.save_token(token_info)
+                
+                # Maak nieuwe client
+                self.sp = spotipy.Spotify(auth_manager=self.auth_manager)
+                self.login_state = "logged_in"
+                self.auth_code = None  # Reset auth code
+                print("✅ Login successful! Token obtained.")
+                return True
+            
+            print("❌ Failed to get token from auth code")
             return False
             
         except Exception as e:
@@ -400,35 +435,44 @@ class PythonSpotifyPlayer:
         self.screen.blit(title, (self.WIDTH//2 - title.get_width()//2, 50))
         
         # Instructies
-        instr = self.artist_font.render("Scan QR code to login", True, (200, 200, 200))
+        if self.callback_received:
+            instr = self.artist_font.render("Processing login...", True, (30, 215, 96))
+        else:
+            instr = self.artist_font.render("Scan QR code to login", True, (200, 200, 200))
         self.screen.blit(instr, (self.WIDTH//2 - instr.get_width()//2, 100))
         
         # QR code
         qr_x, qr_y, qr_w, qr_h = self.positions['qr_area']
         
-        if self.qr_image:
+        if self.qr_image and not self.callback_received:
             # Teken QR code
             self.screen.blit(self.qr_image, (qr_x, qr_y))
             
             # Border rond QR
             pygame.draw.rect(self.screen, (100, 100, 100), (qr_x-2, qr_y-2, qr_w+4, qr_h+4), 2)
+        elif self.callback_received:
+            # Toon "processing" bericht
+            pygame.draw.rect(self.screen, (30, 50, 30), (qr_x, qr_y, qr_w, qr_h))
+            proc_text = self.title_font.render("Processing...", True, (30, 215, 96))
+            self.screen.blit(proc_text, (qr_x + 85, qr_y + 120))
         else:
             # Placeholder
             pygame.draw.rect(self.screen, (50, 50, 50), (qr_x, qr_y, qr_w, qr_h))
             qr_text = self.artist_font.render("Generating QR...", True, (150, 150, 150))
             self.screen.blit(qr_text, (qr_x + 90, qr_y + 140))
         
-        # Open in browser knop
-        browser_rect = self.app_rects['open_browser']
-        pygame.draw.rect(self.screen, (30, 215, 96), browser_rect, border_radius=10)
-        browser_text = self.button_font.render("OPEN IN BROWSER", True, (255, 255, 255))
-        self.screen.blit(browser_text, (browser_rect.x + 10, browser_rect.y + 10))
+        # Open in browser knop (alleen als callback nog niet ontvangen)
+        if not self.callback_received:
+            browser_rect = self.app_rects['open_browser']
+            pygame.draw.rect(self.screen, (30, 215, 96), browser_rect, border_radius=10)
+            browser_text = self.button_font.render("OPEN IN BROWSER", True, (255, 255, 255))
+            self.screen.blit(browser_text, (browser_rect.x + 10, browser_rect.y + 10))
         
         # Back knop
         self.screen.blit(self.images['back'], self.positions['back_button'])
         
         # Toon verkorte URL
-        if self.auth_url:
+        if self.auth_url and not self.callback_received:
             url_short = self.auth_url[:50] + "..." if len(self.auth_url) > 50 else self.auth_url
             url_text = self.time_font.render(f"URL: {url_short}", True, (180, 180, 180))
             self.screen.blit(url_text, (250, 410))
@@ -560,7 +604,7 @@ class PythonSpotifyPlayer:
         if self.app_rects['back'].collidepoint(pos):
             return 'back'
         
-        if self.app_rects['open_browser'].collidepoint(pos) and self.auth_url:
+        if self.app_rects['open_browser'].collidepoint(pos) and self.auth_url and not self.callback_received:
             webbrowser.open(self.auth_url)
             print(f"Opened browser with URL: {self.auth_url}")
             return None
@@ -625,13 +669,19 @@ class PythonSpotifyPlayer:
         while running:
             current_time = time.time()
             
+            # Check voor callback
+            if self.callback_received and self.auth_code:
+                print("🔄 Processing callback...")
+                if self.handle_auth_callback():
+                    self.callback_received = False
+            
             # Update playback data elke 2 seconden
-            if current_time - last_update >= 2:
+            if current_time - last_update >= 2 and self.login_state == "logged_in":
                 self.update_playback_data()
                 last_update = current_time
             
             # Simuleer progress als afspelen
-            if self.current_track['is_playing'] and self.current_track['duration'] > 0:
+            if self.login_state == "logged_in" and self.current_track['is_playing'] and self.current_track['duration'] > 0:
                 self.current_track['progress'] = min(
                     self.current_track['progress'] + 2000,  # 2 seconden per update
                     self.current_track['duration']
@@ -743,8 +793,7 @@ def main():
                         print(f"Clicked {APP_NAMES[i]}")
                         if APP_NAMES[i] == 'Spotify':
                             try:
-                                # BELANGRIJK: gebruik PythonSpotifyPlayer
-                                spotify = PythonSpotifyPlayer()  # 👈 HIER!
+                                spotify = PythonSpotifyPlayer()
                                 result = spotify.run()
                                 
                                 # Na terugkeer, herinitialiseer hoofdscherm
