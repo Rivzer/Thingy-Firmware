@@ -1,0 +1,5 @@
+pystray
+pyserial 
+customtkinter
+Pillow
+keyboard
