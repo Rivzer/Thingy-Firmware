@@ -70,13 +70,13 @@
     "hotkey": "shiftright+d"
   },
   "15": {
-    "label": "dsdsadsa",
+    "label": "test",
     "type": "hotkey",
-    "hotkey": "e"
+    "hotkey": "q+ttq"
   },
   "16": {
-    "label": "asads",
+    "label": "mute",
     "type": "hotkey",
-    "hotkey": "="
+    "hotkey": "a+alt"
   }
 }

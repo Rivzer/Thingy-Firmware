@@ -1,4 +1,4 @@
-import tkinter, pystray, serial, customtkinter, time, json, pyautogui, threading, serial.tools.list_ports
+import tkinter, pystray, serial, customtkinter, time, json, pyautogui, threading, serial.tools.list_ports, keyboard
 from PIL import Image
 
 """ customtkinter.set_appearance_mode("System")  # Modes: system, light, dark
@@ -36,11 +36,22 @@ def openSettingsWindow():
 
     app = customtkinter.CTk()
     app.geometry("1000x600")
+    pressedButton = ""
 
-    def drawButtons():
+    def drawButtons(widgets):
         def button_function(button_num):
             def wrapper():
-                print(f"button {button_num} pressed")          
+                print(f"button {button_num} pressed")    
+                with open('macros.json') as f:
+                    macros = json.load(f)      
+                nonlocal pressedButton
+                pressedButton= str(button_num)
+                widgets['selected_label'].configure(text=f"Configuring button {macros[pressedButton]["label"]}")
+                widgets['label_entry'].delete(0, 'end')
+                widgets['label_entry'].insert(0, f'{macros[pressedButton]["label"]}')
+                widgets['type_dropdown'].set(f'{macros[pressedButton]["type"]}')
+                widgets['hotkey_entry'].delete(0, 'end')
+                widgets['hotkey_entry'].insert(0, f'{macros[pressedButton]["hotkey"]}')
             return wrapper
 
         button_frame = customtkinter.CTkFrame(master=app)
@@ -71,7 +82,6 @@ def openSettingsWindow():
             buttons.append(button)
 
     def drawControlls():
-        drawButtons()
         
         control_frame = customtkinter.CTkFrame(master=app)
         control_frame.pack(side="bottom", fill="x", padx=20, pady=20)
@@ -111,20 +121,52 @@ def openSettingsWindow():
         hotkey_entry = customtkinter.CTkEntry(master=hotkey_frame, width=150)
         hotkey_entry.pack(side="left", padx=5)
         
+        def listen_button_action():
+            listen_button.configure(text="Listening...")
+            app.update()
+            keys = keyboard.read_hotkey()
+            hotkey_entry.delete(0, 'end')
+            hotkey_entry.insert(0, keys)
+            listen_button.configure(text="Listen for Keys")
+
         listen_button = customtkinter.CTkButton(
+            #TODO: make button unclickable when no pressedButton
             master=hotkey_frame,
             text="Listen for Keys",
-            width=120
+            width=120,
+            command=listen_button_action
         )
         listen_button.pack(side="left", padx=5)
         
+        def save_button_action():
+            with open('macros.json') as f:
+                macros = json.load(f)
+            macros[pressedButton]["label"] = widgets['label_entry'].get()
+            macros[pressedButton]["type"] = widgets['type_dropdown'].get()
+            macros[pressedButton]["hotkey"] = widgets['hotkey_entry'].get()
+            with open('macros.json', 'w') as f:
+                json.dump(macros, f, indent=2)
+            threadReadingInputOnCom.do_run = False
+            threadReadingInputOnCom.do_run = True
+            #TODO: need to update all other widgets to show active data
+
         # Save button
         save_button = customtkinter.CTkButton(
             master=inner_frame,
             text="Save",
-            width=100
+            width=100,
+            command=save_button_action
         )
         save_button.pack(side="right", padx=10)
+
+        widgets = {
+            'selected_label': selected_label,
+            'label_entry': label_entry,
+            'hotkey_entry': hotkey_entry,
+            'type_dropdown': type_dropdown
+        } 
+
+        drawButtons(widgets)
 
     drawControlls()
     app.mainloop()
@@ -145,11 +187,11 @@ def readingInputOnCom():
 
     print("reading port: "+ser.portstr)
 
-    # import the json file with macros
-    with open('macros.json') as f:
-                d = json.load(f)
-
+    
     while getattr(threadReadingInputOnCom, "do_run", True):
+        # import the json file with macros
+        with open('macros.json') as f:
+            d = json.load(f)
         line = str(ser.readline())
         line = line[8:-3]
         if line != "":
@@ -158,14 +200,9 @@ def readingInputOnCom():
             if line in d:
                 macro = d[line] #saves the info about the macro to "macro"
                 macroHotkey = macro['hotkey']
-                if "+" in macroHotkey:
-                    macroHotkey = macroHotkey.split("+")
-                else:
-                        macroHotkey = [macroHotkey]
-
-                    #initialize the hotkey
-                pressKeys = pyautogui
-                pressKeys.hotkey(macroHotkey)
+                
+                #initialize the hotkey
+                keyboard.press_and_release(macroHotkey)
                 print(macroHotkey)
                 
             else:
