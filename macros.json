@@ -1,7 +1,82 @@
 {
-  "22": {
-    "label": "mute",
+  "1": {
+    "label": "",
+    "type": "",
+    "hotkey": ""
+  },
+  "2": {
+    "label": "",
+    "type": "",
+    "hotkey": ""
+  },
+  "3": {
+    "label": "",
+    "type": "",
+    "hotkey": ""
+  },
+  "4": {
+    "label": "",
+    "type": "",
+    "hotkey": ""
+  },
+  "5": {
+    "label": "",
+    "type": "",
+    "hotkey": ""
+  },
+  "6": {
+    "label": "",
+    "type": "",
+    "hotkey": ""
+  },
+  "7": {
+    "label": "",
+    "type": "",
+    "hotkey": ""
+  },
+  "8": {
+    "label": "",
+    "type": "",
+    "hotkey": ""
+  },
+  "9": {
+    "label": "",
+    "type": "",
+    "hotkey": ""
+  },
+  "10": {
+    "label": "",
+    "type": "",
+    "hotkey": ""
+  },
+  "11": {
+    "label": "",
+    "type": "",
+    "hotkey": ""
+  },
+  "12": {
+    "label": "",
+    "type": "",
+    "hotkey": ""
+  },
+  "13": {
+    "label": "",
+    "type": "",
+    "hotkey": ""
+  },
+  "14": {
+    "label": "",
     "type": "hotkey",
-    "hotkey": "alt+a"
+    "hotkey": "shiftright+d"
+  },
+  "15": {
+    "label": "dsdsadsa",
+    "type": "hotkey",
+    "hotkey": "e"
+  },
+  "16": {
+    "label": "asads",
+    "type": "hotkey",
+    "hotkey": "="
   }
 }
