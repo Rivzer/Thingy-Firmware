@@ -19,6 +19,7 @@ app.mainloop() """
 image = Image.open("icon.png")
 
 def quitIcon(icon, item):
+    threadReadingInputOnCom.do_run = False
     icon.stop()
 
 def openSettings():
@@ -52,7 +53,7 @@ def readingInputOnCom():
     with open('macros.json') as f:
                 d = json.load(f)
 
-    while True:
+    while getattr(threadReadingInputOnCom, "do_run", True):
         line = str(ser.readline())
         line = line[8:-1]
         if line != "":
