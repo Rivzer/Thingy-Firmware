@@ -18,11 +18,11 @@ app.mainloop() """
 
 image = Image.open("icon.png")
 
-def quitIcon(icon, item):
+def quitIcon(icon):
     threadReadingInputOnCom.do_run = False
     icon.stop()
 
-def openSettings():
+def openSettingsWindow():
     customtkinter.set_appearance_mode("System")  # Modes: system, light, dark
     customtkinter.set_default_color_theme("blue")  # Themes: blue, dark-blue, green
 
@@ -36,7 +36,12 @@ def openSettings():
     button = customtkinter.CTkButton(master=app, text="CTkButton", command=button_function)
     button.place(relx=0.5, rely=0.5, anchor=customtkinter.CENTER)
 
-    app.mainloop() 
+    app.mainloop()
+
+def openSettings():
+    settings_thread = threading.Thread(target=openSettingsWindow)
+    settings_thread.daemon = True
+    settings_thread.start() 
 
 menu = pystray.Menu(
     pystray.MenuItem('Quit', quitIcon),
@@ -55,7 +60,7 @@ def readingInputOnCom():
 
     while getattr(threadReadingInputOnCom, "do_run", True):
         line = str(ser.readline())
-        line = line[8:-1]
+        line = line[8:-3]
         if line != "":
             print(line)
             
@@ -65,9 +70,9 @@ def readingInputOnCom():
                 if "+" in macroHotkey:
                     macroHotkey = macroHotkey.split("+")
                 else:
-                    macroHotkey = [macroHotkey]
+                        macroHotkey = [macroHotkey]
 
-                #initialize the hotkey
+                    #initialize the hotkey
                 pressKeys = pyautogui
                 pressKeys.hotkey(macroHotkey)
                 print(macroHotkey)
@@ -81,7 +86,10 @@ def runningTrayApp():
     
 
 threadReadingInputOnCom = threading.Thread(target=readingInputOnCom)
+threadReadingInputOnCom.daemon = True
+
 threadRunningTrayApp = threading.Thread(target=runningTrayApp)
 
 threadReadingInputOnCom.start()
 threadRunningTrayApp.start()
+threadRunningTrayApp.join()
